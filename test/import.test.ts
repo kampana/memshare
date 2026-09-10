@@ -8,7 +8,7 @@ import { MemoryStore } from "../src/memory/store.js";
 import type { MemoryBundle } from "../src/memory/types.js";
 import { readBundleFile, writeBundleFile } from "../src/sharing/bundle.js";
 import { buildExportBundle, selectForExport } from "../src/sharing/export.js";
-import { applyImport, planImport, senderTag } from "../src/sharing/import.js";
+import { applyImport, earliestExpiry, planImport, senderTag } from "../src/sharing/import.js";
 
 let aliceDir: string;
 let bobDir: string;
@@ -218,5 +218,57 @@ describe("senderTag", () => {
     expect(senderTag("Alice")).toBe("from-alice");
     expect(senderTag("Dana R. Cohen")).toBe("from-dana-r-cohen");
     expect(senderTag("!!!")).toBe("from-import");
+  });
+});
+
+describe("bundle expiry reaches the recipient's store", () => {
+  it("gives imported items the bundle's deadline", async () => {
+    const expiresAt = new Date(Date.now() + 30 * 86_400_000).toISOString();
+    await alice.add({ content: "Contractor scope", tags: ["px"], visibility: "shareable" });
+    const selection = await selectForExport(alice, { tags: ["px"] });
+    const bundle = buildExportBundle(
+      selection.included.map((c) => c.item),
+      { exportedBy: "alice", expiresAt },
+    );
+
+    const plan = await planImport(bob, bundle);
+    await applyImport(bob, plan, { acceptedIds: plan.entries.map((e) => e.item.id) });
+
+    const stored = await bob.all();
+    expect(stored).toHaveLength(1);
+    expect(stored[0]!.expiresAt).toBe(expiresAt);
+  });
+
+  it("keeps the item's own deadline when it is sooner", async () => {
+    const soon = new Date(Date.now() + 86_400_000).toISOString();
+    const later = new Date(Date.now() + 30 * 86_400_000).toISOString();
+    await alice.add({
+      content: "Short-lived detail",
+      tags: ["px"],
+      visibility: "shareable",
+      expiresAt: soon,
+    });
+    const selection = await selectForExport(alice, { tags: ["px"] });
+    const bundle = buildExportBundle(
+      selection.included.map((c) => c.item),
+      { exportedBy: "alice", expiresAt: later },
+    );
+
+    const plan = await planImport(bob, bundle);
+    await applyImport(bob, plan, { acceptedIds: plan.entries.map((e) => e.item.id) });
+    expect((await bob.all())[0]!.expiresAt).toBe(soon);
+  });
+
+  it("leaves items unexpiring when the bundle has no deadline", async () => {
+    const plan = await planImport(bob, await aliceExports());
+    await applyImport(bob, plan, { acceptedIds: plan.entries.map((e) => e.item.id) });
+    expect((await bob.all()).every((i) => i.expiresAt === undefined)).toBe(true);
+  });
+
+  it("ignores an unparseable deadline instead of expiring on arrival", () => {
+    const valid = new Date(Date.now() + 1000).toISOString();
+    expect(earliestExpiry("not-a-date", valid)).toBe(valid);
+    expect(earliestExpiry("not-a-date")).toBeUndefined();
+    expect(earliestExpiry(undefined, undefined)).toBeUndefined();
   });
 });

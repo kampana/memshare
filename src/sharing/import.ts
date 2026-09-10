@@ -109,13 +109,17 @@ export async function applyImport(
       originalId: entry.item.id,
     };
 
+    // A bundle that expires in 30 days should not hand over memories that
+    // live forever. The item keeps whichever deadline comes first.
+    const expiresAt = earliestExpiry(entry.item.expiresAt, plan.bundle.metadata.expiresAt);
+
     const saved = await store.add({
       content: entry.item.content,
       tags: [...entry.item.tags, ...(options.addTags ?? [])],
       visibility: options.visibility ?? "private",
       confidence: "imported",
       source: entry.item.source,
-      ...(entry.item.expiresAt ? { expiresAt: entry.item.expiresAt } : {}),
+      ...(expiresAt ? { expiresAt } : {}),
       importedFrom: provenance,
     });
     imported.push(saved);
@@ -123,6 +127,22 @@ export async function applyImport(
 
   const unknown = options.acceptedIds.filter((id) => !byId.has(id));
   return { imported, unknown };
+}
+
+/**
+ * The sooner of two optional deadlines. Unparseable values are ignored rather
+ * than treated as "expires now", so a malformed date cannot silently destroy
+ * a memory the moment it lands.
+ */
+export function earliestExpiry(...candidates: Array<string | undefined>): string | undefined {
+  let best: { iso: string; at: number } | undefined;
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const at = Date.parse(candidate);
+    if (Number.isNaN(at)) continue;
+    if (!best || at < best.at) best = { iso: candidate, at };
+  }
+  return best?.iso;
 }
 
 /** A slug safe to use as a tag, e.g. `from-alice`. */

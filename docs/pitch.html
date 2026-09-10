@@ -172,16 +172,6 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 }
 .cover-content { position: relative; z-index: 1; }
 
-.persona-card {
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  padding: 3.5vmin;
-  border: 1px solid var(--color-border);
-}
-.persona-emoji { font-size: 4.5vmin; margin-bottom: 1.5vmin; }
-.persona-card h3 { font-size: 2.2vmin; margin-bottom: 1vmin; }
-.persona-card p { font-size: 1.7vmin; color: var(--color-text-secondary); line-height: 1.5; }
-
 .cta-box {
   background: linear-gradient(135deg, rgba(124,106,255,0.15), rgba(0,214,143,0.08));
   border: 1px solid rgba(124,106,255,0.3);
@@ -374,15 +364,15 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 <!-- SLIDE 6 — HOW MEMORY GETS POPULATED -->
 <div class="slide" data-slide="6">
   <div class="tag">How Memory Gets Built</div>
-  <h2>Claude suggests. <span class="accent">You decide.</span></h2>
-  <p class="subtitle" style="margin-bottom: 2.5vmin;">Three modes — you choose the level of control.</p>
+  <h2>Capture is automatic.<br><span class="accent">Sharing never is.</span></h2>
+  <p class="subtitle" style="margin-bottom: 2.5vmin;">Three modes control what gets <em>written down</em>. What gets <em>shared</em> is gated separately, and always by you.</p>
   <div class="three-col" style="margin-bottom: 2.5vmin;">
     <div class="card" style="border-color: var(--color-text-muted);">
       <div style="display: flex; align-items: center; gap: 1.5vmin; margin-bottom: 1.5vmin;">
         <span style="font-size: 3vmin;">🤖</span>
-        <h3 style="font-size: 2.2vmin;">Auto</h3>
+        <h3 style="font-size: 2.2vmin; color: var(--color-accent-light);">Auto <span style="font-size: 1.4vmin; color: var(--color-text-muted);">(default)</span></h3>
       </div>
-      <p class="body-text">Claude saves automatically whatever it thinks is important. Fastest, least control.</p>
+      <p class="body-text">Claude saves what it learns as you work. Everything lands <strong>private</strong> — nothing can be shared until you mark it.</p>
       <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
         Claude silently calls memory_set()
       </div>
@@ -390,7 +380,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     <div class="card" style="border-color: var(--color-accent);">
       <div style="display: flex; align-items: center; gap: 1.5vmin; margin-bottom: 1.5vmin;">
         <span style="font-size: 3vmin;">💬</span>
-        <h3 style="font-size: 2.2vmin; color: var(--color-accent-light);">Suggest <span style="font-size: 1.4vmin; color: var(--color-text-muted);">(default)</span></h3>
+        <h3 style="font-size: 2.2vmin;">Suggest</h3>
       </div>
       <p class="body-text">Claude proposes what to save at the end of a conversation. You approve, edit, or skip.</p>
       <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
@@ -409,17 +399,19 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     </div>
   </div>
   <div class="card" style="padding: 3vmin 4vmin; background: var(--color-surface-alt); border-color: var(--color-accent); max-width: 80vmin; margin: 0 auto;">
-    <p style="font-size: 1.6vmin; color: var(--color-text-muted); margin-bottom: 1.5vmin; text-align: center;">Suggest mode — what it looks like in practice:</p>
-    <div style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.5vmin; line-height: 1.9; color: var(--color-text-secondary);">
-      <span style="color: var(--color-accent-light);">Claude:</span> I noticed a few things worth saving from this conversation:<br>
+    <p style="font-size: 1.6vmin; color: var(--color-text-muted); margin-bottom: 1.5vmin; text-align: center;">Suggest mode — what actually happens:</p>
+    <div style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.45vmin; line-height: 1.85; color: var(--color-text-secondary);">
+      <span style="color: var(--color-text-muted);">// Claude, mid-conversation — nothing is stored yet</span><br>
+      <span style="color: var(--color-accent-light);">memory_suggest</span>({ suggestions: [<br>
+      &nbsp;&nbsp;{ content: <span style="color: var(--color-yellow);">"Auth service uses JWT with 15min refresh"</span>, tags: [<span style="color: var(--color-yellow);">"auth"</span>] },<br>
+      &nbsp;&nbsp;{ content: <span style="color: var(--color-yellow);">"Team decided Postgres over MySQL"</span>, tags: [<span style="color: var(--color-yellow);">"db"</span>] }<br>
+      ] })<br>
       <br>
-      &nbsp;&nbsp;<span style="color: var(--color-green);">1.</span> "Auth service uses JWT with 15min refresh" → <span style="color: var(--color-text-muted);">tags: project-x, auth</span><br>
-      &nbsp;&nbsp;<span style="color: var(--color-green);">2.</span> "Team decided Postgres over MySQL" → <span style="color: var(--color-text-muted);">tags: project-x, db</span><br>
-      &nbsp;&nbsp;<span style="color: var(--color-green);">3.</span> "You prefer functional style over OOP" → <span style="color: var(--color-text-muted);">tags: preferences</span><br>
-      <br>
-      &nbsp;&nbsp;Save all? Save some? Skip?<br>
-      <br>
-      <span style="color: var(--color-yellow);">You:</span> save 1 and 2, skip 3
+      <span style="color: var(--color-text-muted);">// Later, in your terminal — you decide</span><br>
+      $ <span style="color: var(--color-green);">memshare</span> review<br>
+      &nbsp;&nbsp;<span style="color: var(--color-green);">◉</span> Auth service uses JWT with 15min refresh<br>
+      &nbsp;&nbsp;<span style="color: var(--color-green);">◉</span> Team decided Postgres over MySQL<br>
+      &nbsp;&nbsp;<span style="color: var(--color-text-muted);">space to toggle · enter to confirm</span>
     </div>
   </div>
 </div>
@@ -759,7 +751,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </p>
       <div style="display: flex; gap: 3vmin; justify-content: center; flex-wrap: wrap;">
         <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
-          <p style="font-size: 2.2vmin; font-weight: 600;">🚀 MVP</p>
+          <p style="font-size: 2.2vmin; font-weight: 600;">🚀 v0.1 · shipped</p>
           <p style="font-size: 1.6vmin; color: var(--color-text-muted);">CLI + MCP Server<br>Export/Import bundles</p>
         </div>
         <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">

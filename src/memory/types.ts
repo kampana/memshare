@@ -77,7 +77,7 @@ export type MemoryBundle = z.infer<typeof MemoryBundle>;
 
 export const Config = z.object({
   displayName: z.string().min(1).default("anonymous"),
-  mode: Mode.default("suggest"),
+  mode: Mode.default("auto"),
   defaultVisibility: Visibility.default("private"),
   autoRedactPII: z.boolean().default(true),
   /** Informational: the live location always comes from resolveMemoryDir(). */
@@ -87,7 +87,7 @@ export type Config = z.infer<typeof Config>;
 
 export const DEFAULT_CONFIG: Config = {
   displayName: "anonymous",
-  mode: "suggest",
+  mode: "auto",
   defaultVisibility: "private",
   autoRedactPII: true,
   memoryDir: "~/.memshare",

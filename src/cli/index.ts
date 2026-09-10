@@ -36,7 +36,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.1.1";
+const VERSION = "0.2.0";
 
 const program = new Command();
 
@@ -99,10 +99,13 @@ program
           default: mode,
           choices: [
             {
-              name: "suggest  - the AI proposes, you approve (recommended)",
+              name: "auto     - the AI saves as it learns, always private (recommended)",
+              value: "auto" as const,
+            },
+            {
+              name: "suggest  - the AI proposes, you approve each one",
               value: "suggest" as const,
             },
-            { name: "auto     - the AI saves silently", value: "auto" as const },
             {
               name: "manual   - nothing is saved unless you ask for it",
               value: "manual" as const,

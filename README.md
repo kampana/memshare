@@ -86,13 +86,15 @@ The memory store is the product. The MCP server is one adapter over it, the CLI 
 
 ## How memories get saved — three modes
 
+These control what gets **written down** locally. What gets **shared** is a separate gate, covered below, and is never automatic.
+
 | Mode | What happens | Who decides |
 |---|---|---|
-| `auto` | The AI calls `memory_set` and it is saved silently. | The AI |
-| `suggest` **(default)** | The AI calls `memory_suggest`. Nothing is stored until you run `memshare review`. | You, in batch |
+| `auto` **(default)** | The AI saves what it learns as you work. Everything lands `private`. | The AI, locally |
+| `suggest` | The AI calls `memory_suggest`. Nothing is stored until you run `memshare review`. | You, in batch |
 | `manual` | Nothing is saved unless you say "remember this". | You, every time |
 
-In `suggest` mode a direct `memory_set` is queued as a suggestion rather than saved — the consent step cannot be skipped by an over-eager model.
+`auto` is the default because an empty store is useless, and nothing captured locally can leave your machine until you mark it `shareable` anyway. If you would rather approve every item, use `suggest` — and note that a direct `memory_set` is then queued as a suggestion rather than saved, so an over-eager model cannot skip the consent step.
 
 ```bash
 memshare review          # approve or reject, one by one
@@ -105,7 +107,13 @@ memshare review --clear  # reject everything pending
 1. **You tag at creation time.** Every item is `private` (the default) or `shareable`. Private items are never exported, not even when their tags match.
 2. **PII is blocked automatically.** Before anything leaves your machine, memshare scans for emails, phone numbers, government IDs, payment cards, bank details, credentials, and health or financial language. Flagged items are held back; you decide per item whether to skip them, send a redacted version, or send them as-is.
 3. **You see the exact bundle first.** `--preview` runs the identical computation the real export does — there is no separate preview code path to drift out of sync.
-4. **They choose too.** The recipient previews every item and accepts or rejects individually. Bundles are content-hashed, so a file edited in transit is refused, and `--expires` lets a bundle go stale on its own.
+4. **They choose too.** The recipient previews every item and accepts or rejects individually. Bundles are content-hashed, so a file edited in transit is refused.
+
+### What `--expires` does, and does not do
+
+`memshare export --expires 30d` sets a deadline that does two things: the recipient's memshare **refuses to import** the bundle after it passes, and any item they did import **inherits that deadline** — so it stops being recalled and is deleted by `memshare prune`.
+
+It does **not** delete the bundle file, and it is **cooperative, not enforced**: the deadline lives in the bundle metadata, which is not covered by the content hash, so a determined recipient can edit it. Expiry protects against stale context, not against a hostile recipient. There is no central server, so there is nothing that could revoke a file someone already has.
 
 ## How it compares
 

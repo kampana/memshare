@@ -21,3 +21,26 @@ First release.
 - Fixed stale `npx memshare serve` lines in the deck and spec that pointed at
   the old package name.
 - `check:docs` now verifies install and npx lines name the real package.
+
+## 0.2.0
+
+**Default mode is now `auto`, not `suggest`.** Existing stores are unaffected —
+their `config.json` already records an explicit mode. New installs now
+accumulate memories from day one instead of queueing everything behind a
+`memshare review` the user may never discover.
+
+This does not weaken sharing. There are two consent gates: capture (`mode`)
+and sharing (`visibility` + PII scan + export preview + per-item import
+approval). `auto` relaxes only the first, and everything still lands `private`.
+Capture is automatic; sharing never is.
+
+**Bundle `--expires` now propagates to imported items.** A recipient who
+imported a 30-day bundle previously kept those memories forever; an imported
+item now inherits the earlier of its own deadline and the bundle's. Expiry is
+still cooperative — `contentHash` covers `items`, not `metadata`, so a
+determined recipient can edit it. It protects against stale context, not a
+hostile recipient.
+
+Deck: the suggest-mode mockup showed an in-chat approval that does not exist.
+Replaced with the real flow (`memory_suggest` → queue → `memshare review`).
+Removed dead CSS from the audience slide and the stale "MVP" roadmap label.

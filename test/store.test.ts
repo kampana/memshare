@@ -30,7 +30,7 @@ describe("init", () => {
     expect(store.exists()).toBe(true);
     const config = await store.readConfig();
     expect(config.displayName).toBe("alice");
-    expect(config.mode).toBe("suggest");
+    expect(config.mode).toBe("auto"); // capture is automatic; sharing never is
     expect(config.defaultVisibility).toBe("private");
     expect(config.autoRedactPII).toBe(true);
     await expect(fs.stat(path.join(dir, "memories"))).resolves.toBeTruthy();

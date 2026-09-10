@@ -35,7 +35,7 @@ The project is described in three places, and they are one set:
 |---|---|
 | `README.md` | What a user reads first |
 | `docs/SPEC.md` | The build spec — schemas, commands, behaviour |
-| `docs/pitch.html` | The pitch deck, published at <https://kampana.github.io/memshare/pitch.html> |
+| `docs/pitch.html` | **The source of truth.** Published at <https://kampana.github.io/memshare/pitch.html> — when the three disagree, this one wins. |
 
 **Change one, change all three.** A CLI flag added in code but missing from the spec, or a command promised in the deck that does not exist, is a bug — not a documentation nicety. `npm run check:docs` catches the mechanical half of this: it fails if the docs reference a `memshare` command the CLI does not register, or if version numbers drift apart. It cannot check that your prose still makes sense, so read it.
 
@@ -56,3 +56,5 @@ Commands that are deliberately future-facing (the team-server tier, for example)
 ## Reporting a security issue
 
 Please do not open a public issue for anything that could expose someone's memories. Open a private security advisory on the repository instead.
+
+> Verify deck changes against the **live URL**, not just the local file. GitHub Pages takes ~40s to redeploy and caches.

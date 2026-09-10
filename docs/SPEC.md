@@ -373,3 +373,30 @@ The deck and README lead with **memory as a data type**, not with sharing.
 Sharing is the differentiator, but it is not what a new user can evaluate on day one: their store is empty, so there is nothing to share. What they can evaluate immediately is that their memory is inspectable, portable across tools, and genuinely theirs. Sharing is presented as what becomes possible *once memory is a file* — the third step, not the headline.
 
 This matters for the default mode too. `suggest` is the safest consent posture, but it means nothing reaches the store until the user runs `memshare review`. A user who never discovers that command has an empty store after a month and no reason to stay. Anything that makes the pending queue visible is worth more than it costs.
+
+---
+
+# As built — v0.2.0
+
+## Default mode is `auto`, not `suggest`
+
+The original spec made `suggest` the default. In practice that produced an empty store: the AI's proposals sit in `suggestions.json` and never reach `memories/` until the user runs `memshare review`, and a user who never discovers that command has nothing after a month — and therefore nothing to share.
+
+The reasoning for the change: there are two consent gates, and they are not equally important.
+
+| Gate | Controls | Automatic? |
+|---|---|---|
+| Capture (`mode`) | What is written to the local store | Yes, in `auto` |
+| Sharing (`visibility` + PII scan + preview + recipient approval) | What leaves the machine | Never |
+
+`auto` weakens only the first. Everything still lands `private`, so nothing can be exported until the user marks it `shareable`, and the PII scan, export preview and per-item import approval are all untouched. Writing "the team uses Postgres" to a local JSON file is not a privacy event; sending it to a colleague is, and that stays gated.
+
+`suggest` remains available and behaves as specified, including queueing a direct `memory_set`.
+
+## Bundle expiry now propagates to imported items
+
+`BundleMetadata.expiresAt` previously gated import only: a recipient who imported a 30-day bundle on day one kept those memories forever. An imported item now inherits the earlier of its own `expiresAt` and the bundle's, so `--expires 30d` means what a reader assumes it means.
+
+Unparseable dates are ignored rather than treated as "expires now", so a malformed timestamp cannot silently destroy a memory on arrival.
+
+**Known limitation:** `contentHash` covers the `items` array only, not `metadata`. A recipient can edit `metadata.expiresAt` without breaking integrity validation. Expiry is therefore cooperative — it protects against stale context, not against a hostile recipient. Covering metadata in the hash would make tampering detectable and is a candidate for the next `SCHEMA_VERSION` bump, since it changes how every bundle hashes.

@@ -2,7 +2,7 @@
 
 ## The one rule that is easy to break
 
-`README.md`, `docs/SPEC.md` and `docs/pitch.html` are **one set**. If you change what the tool does, change all three in the same commit — including the deck, which is published at <https://kampana.github.io/memshare/pitch.html> and is what most people see first.
+`docs/pitch.html` is the **single source of truth**. When it, `README.md` and `docs/SPEC.md` disagree, the deck wins — it is the product's public face and must never lag the code. All three are one set. If you change what the tool does, change all three in the same commit — including the deck, which is published at <https://kampana.github.io/memshare/pitch.html> and is what most people see first.
 
 `npm run check:docs` catches the mechanical half (commands invoked in docs that the CLI does not register, version drift). It cannot check whether the prose is still true. Read it.
 
@@ -33,3 +33,5 @@ npm run typecheck && npm run build && npm test && npm run check:docs
 ```
 
 Bumping the version means changing it in `package.json`, `src/cli/index.ts` (`VERSION`) and `src/mcp/server.ts` — `check:docs` will fail if you miss one — plus a `CHANGELOG.md` entry.
+
+> Verify deck changes against the **live URL**, not just the local file. GitHub Pages takes ~40s to redeploy and caches.
