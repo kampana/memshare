@@ -221,6 +221,10 @@ const { included, blocked } = await selectForExport(store, { tags: ["db"] });
 
 Every adapter — the CLI, the MCP server, and any you write — goes through these exports. See [`src/index.ts`](src/index.ts).
 
+## Why is the package called `memshare-cli`?
+
+Because `memshare` on npm is unusable. An unrelated project published it in February 2021 and unpublished it that November, and npm permanently reserves unpublished names — the registry returns 409 for everyone, the original owner included. The installed command is still `memshare`.
+
 ## Development
 
 ```bash
