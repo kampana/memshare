@@ -10,6 +10,8 @@ Every AI memory tool today treats memory as a feature of a chat product. memshar
 
 Once memory is a file, three things follow, in this order. You can **inspect** it — greppable, diffable, and actually gone when you delete it. You can **move** it — one store, every MCP client, every machine you own. And only then can you **share** it — selectively, item by item, with approval on both sides. That last one no other tool does at all; they are all per-account by design.
 
+That third one is the part nothing else does. A designer working in Cursor and backend devs working in Claude Code can hand each other context directly — different people *and* different vendors, same bundle format.
+
 No central server. No cloud. No signup.
 
 📊 **[See the pitch deck](https://kampana.github.io/memshare/pitch.html)** · 📄 **[Full spec](docs/SPEC.md)**
