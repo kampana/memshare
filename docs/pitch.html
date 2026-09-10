@@ -453,7 +453,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       <span class="cmd">memshare</span> init<br>
       <br>
       <span class="comment"># Connect to Claude</span><br>
-      <span class="cmd">claude</span> mcp add memshare <span class="flag">--</span> npx memshare serve<br>
+      <span class="cmd">claude</span> mcp add memshare <span class="flag">--</span> npx -y memshare-cli serve<br>
       <br>
       <span class="comment"># See what's in your memory</span><br>
       <span class="cmd">memshare</span> list<br>
@@ -676,7 +676,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     <div class="code-block" style="font-size: 1.3vmin;">
       <span class="comment"># Local: export a file, send it yourself</span><br>
       <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"bob"</span><br>
-      <span class="comment"># → bundle-a3f8.json — send via Slack, email, etc.</span>
+      <span class="comment"># → bundle-a3f8.memshare.json — send via Slack, email, etc.</span>
     </div>
     <div class="code-block" style="font-size: 1.3vmin;">
       <span class="comment"># Team server: share directly, no file to send</span><br>

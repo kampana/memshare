@@ -161,7 +161,7 @@ Interactive: asks for display name and preferred mode.
 
 ### memshare serve
 Starts the MCP server (stdio transport). This is what Claude connects to.
-Usage: `claude mcp add memshare -- npx memshare serve`
+Usage: `claude mcp add memshare -- npx -y memshare-cli serve`
 
 ### memshare list
 Shows all memory items in a table format.
@@ -259,7 +259,7 @@ Expected: shows interactive preview, Bob can accept/reject per item. Accepted it
 
 ### Test 4: MCP server with Claude
 ```bash
-claude mcp add memshare -- npx memshare serve
+claude mcp add memshare -- npx -y memshare-cli serve
 # Then in Claude: "What do you know about me from memory?"
 # Claude should call memory_get and find the stored items
 # Then: "Remember that I like dark mode in all my apps"
