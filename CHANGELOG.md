@@ -148,3 +148,9 @@ The installed command is unchanged: `memshare`.
 npm install -g memshare-mcp
 claude mcp add memshare -- npx -y memshare-mcp serve
 ```
+
+## 0.2.7
+
+No functional change. First release published from CI via npm trusted
+publishing, so there is no longer a long-lived npm token anywhere. Also
+refreshes the README on npm with the sandbox demo (`examples/try-it.sh`).

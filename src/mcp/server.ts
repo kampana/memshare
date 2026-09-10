@@ -48,7 +48,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.2.6" },
+    { name: "memshare", version: "0.2.7" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
