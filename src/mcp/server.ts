@@ -48,7 +48,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.2.7" },
+    { name: "memshare", version: "0.3.0" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -93,8 +93,14 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
               "Do not invent a name for the project or repository -- that tag is added automatically. " +
               "Call memory_list_tags first and reuse existing tags rather than near-duplicates.",
           ),
-        visibility: Visibility.optional().describe(
-          "'private' (default) never leaves the machine. 'shareable' may be included in an export the user approves.",
+        visibility: Visibility.describe(
+          "Decide this every time; there is no default.\n" +
+            "'shareable' — facts about the project, codebase, team conventions or technical " +
+            "decisions. Things a colleague working on the same thing would want to know. " +
+            "It still cannot leave the machine without the user approving an export.\n" +
+            "'private' — anything about the person rather than the work: their preferences, " +
+            "their circumstances, their opinions about people, anything sensitive. " +
+            "When the two are arguable, choose 'private'.",
         ),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
@@ -186,6 +192,61 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       if (duplicates > 0) parts.push(`${duplicates} skipped (already saved or already pending).`);
       parts.push("Nothing is stored until the user runs `memshare review`.");
       return text(parts.join(" "));
+    },
+  );
+
+  server.registerTool(
+    "memory_set_visibility",
+    {
+      title: "Change what may be shared",
+      description:
+        "Mark memories as 'shareable' so they can be included in an export, or back to 'private'. " +
+        "Select them by id, by tag, or by a text query.\n\n" +
+        "Only call this when the user has actually asked for it -- \"make the project-x notes " +
+        "shareable\", \"don't share that one\". Never decide on your own that something should " +
+        "become shareable.\n\n" +
+        "This does not share anything. It only makes an item eligible for an export that the user " +
+        "still has to run and approve.",
+      inputSchema: {
+        visibility: Visibility.describe(
+          "'shareable' to allow it into a future export, 'private' to rule it out.",
+        ),
+        ids: z.array(z.string()).optional().describe("Memory ids, as returned by memory_get."),
+        tags: z.array(z.string()).optional().describe("Every memory carrying any of these tags."),
+        query: z.string().optional().describe("Every memory matching this text."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
+    },
+    async ({ visibility, ids, tags, query }) => {
+      if ((!ids || ids.length === 0) && (!tags || tags.length === 0) && !query) {
+        return text(
+          "Nothing selected. Pass ids, tags, or a query -- this tool will not change every memory at once.",
+        );
+      }
+
+      const selected =
+        ids && ids.length > 0
+          ? (await store.all()).filter((i) => ids.includes(i.id))
+          : await store.list({
+              ...(tags && tags.length > 0 ? { tags } : {}),
+              ...(query ? { query } : {}),
+            });
+
+      const changing = selected.filter((i) => i.visibility !== visibility);
+      if (selected.length === 0) return text("Nothing matched.");
+      if (changing.length === 0) {
+        return text(`All ${selected.length} matching memory(s) are already ${visibility}.`);
+      }
+
+      for (const item of changing) await store.update(item.id, { visibility });
+
+      const listed = changing.map((i) => `- ${i.content}`).join("\n");
+      return text(
+        `${changing.length} memory(s) are now ${visibility}:\n${listed}\n\n` +
+          (visibility === "shareable"
+            ? "They are still on this machine only. Sharing them takes an explicit `memshare export`, which the user runs and approves."
+            : "They can no longer be included in any export."),
+      );
     },
   );
 

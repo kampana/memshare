@@ -154,3 +154,23 @@ claude mcp add memshare -- npx -y memshare-mcp serve
 No functional change. First release published from CI via npm trusted
 publishing, so there is no longer a long-lived npm token anywhere. Also
 refreshes the README on npm with the sandbox demo (`examples/try-it.sh`).
+
+## 0.3.0
+
+**New MCP tool: `memory_set_visibility`.** Promoting a memory to shareable was
+CLI-only, on the argument that consent should not be delegated to a model. In
+practice that broke the flow: if promoting means opening a terminal, most
+people never promote anything and nothing is ever shareable. You can now say
+"make the project-x notes shareable" and the assistant does it.
+
+Marking is not sharing. `shareable` only makes an item *eligible* for an
+export the user still runs, previews and approves. The real gate did not move.
+
+**`memory_set` now requires an explicit `visibility`.** It used to default to
+private, which meant everything captured needed promoting later. The model
+now decides at capture time — shareable for the project and its conventions,
+private for anything about the person, private when it is arguable.
+
+**Roadmap stages are no longer numbered.** Tying them to versions collided
+with reality twice. Only the shipped card carries a version; the rest are
+themes.

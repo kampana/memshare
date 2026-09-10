@@ -1,6 +1,6 @@
 {
   "name": "memshare-mcp",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Peer-to-peer AI memory sharing between users — with consent. Local-first JSON memory store with an MCP server and CLI.",
   "keywords": [
     "mcp",

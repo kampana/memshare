@@ -456,3 +456,26 @@ The real v0.3 work is the two cases MCP does not cover:
 Published as `memshare-cli` through 0.2.5, now `memshare-mcp`. `-cli` misdescribed the project to exactly the audience it targets: someone browsing MCP servers reads "CLI tool" and assumes the terminal is the interface, when capture and recall happen entirely in conversation and only the consent steps are commands.
 
 `memshare-cli` is deprecated rather than unpublished. Deprecation warns on install and leaves the name working; unpublishing would burn it permanently, which is the exact trap that made `memshare` unusable in the first place.
+
+## `memory_set_visibility` — promoting from conversation
+
+`memshare mark` was CLI-only on the argument that consent decisions should not be delegated to a model. In practice that broke the flow for the people this is built for: if promoting a memory means opening a terminal, most users never promote anything, and nothing is ever shareable.
+
+The MCP tool exists now. What makes it safe is that **marking is not sharing**. Setting `shareable` only makes an item *eligible* for a future export; the export itself is still a command the user runs, with a preview, a PII scan and a confirmation. The real consent gate never moved.
+
+The tool description says to call it only when the user asks, and never on the model's own initiative. That is a prompt-level constraint, not an enforced one — which is acceptable precisely because the blast radius of a wrong mark is "this item could appear in a preview the user still has to approve".
+
+## `memory_set` requires an explicit visibility
+
+The spec made `visibility` optional, falling back to `defaultVisibility` (private). In practice that meant everything the assistant captured was private and had to be promoted later — an extra step most people would never take, which is what made `memshare mark` necessary in the first place.
+
+`visibility` is now **required** on every `memory_set` call. The model decides at capture time, guided by a rule stated in the parameter description:
+
+- **shareable** — the project, the codebase, team conventions, technical decisions. What a colleague on the same work would want to know.
+- **private** — the person rather than the work: preferences, circumstances, opinions about people, anything sensitive. When arguable, private.
+
+This does not weaken anything. `shareable` only makes an item eligible for an export the user still runs, previews and approves, with the PII scan in between. It removes a step from the common path rather than removing a gate.
+
+## Roadmap stages are no longer numbered
+
+Tying roadmap stages to version numbers collided with reality twice — once when 0.2.0 shipped while the deck still called v0.2 future, and again when this release took 0.3.0. Only the shipped card carries a version now; everything after it is a theme (NEXT / LATER / SOMEDAY). `check:docs` still verifies the shipped card matches `package.json`.

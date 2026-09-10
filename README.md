@@ -43,10 +43,15 @@ After setup, capture and recall happen in conversation — there is no command t
 
 The commands exist for the decisions you should not delegate to a model: **what becomes shareable, what gets exported, and what you accept from someone else.** That is the point, not an unfinished UI.
 
+Promoting happens either way — in conversation, or at a prompt:
+
+> *"make the project-x notes shareable"* → the AI calls `memory_set_visibility`
+
 ```bash
-# The AI captures everything as private. Promote what the team should have:
 memshare mark --tags project-x --shareable
 ```
+
+Either route only makes an item **eligible**. Nothing is shared until you run `memshare export` and approve the preview — that step stays deliberately out of the model's hands.
 
 ### Tags name themselves
 
@@ -166,13 +171,14 @@ It does **not** delete the bundle file, and it is **cooperative, not enforced**:
 
 ## MCP tools
 
-The server exposes four tools to any MCP client:
+The server exposes five tools to any MCP client:
 
 | Tool | What it does |
 |---|---|
-| `memory_set` | Save one durable fact. Routed to the approval queue in `suggest` mode. |
+| `memory_set` | Save one durable fact, choosing `private` or `shareable` for it. Routed to the approval queue in `suggest` mode. |
 | `memory_get` | Recall memories by free text, tags, or most-recent. |
 | `memory_suggest` | Propose memories for the user to approve later. |
+| `memory_set_visibility` | Mark memories shareable or private, when the user asks in conversation. |
 | `memory_list_tags` | List every tag, so the model reuses tags instead of inventing near-duplicates. |
 
 ## CLI reference
@@ -215,11 +221,10 @@ The same code, four ways to run it — pick one, switch whenever:
 
 ## Roadmap
 
-- **v0.2 — shipped:** CLI, MCP server, export/import bundles, PII guard, consent flow
-- **v0.3:** a ChatGPT route, and a system-prompt inject for API-only models (Gemini, Ollama). Claude Code, Cursor, Copilot and Windsurf already work — they speak MCP, so they need no adapter.
-- **v0.4:** Docker deploy, remote MCP server
-- **v0.5:** discovery and live sync
-- **v1.0:** when the bundle format freezes and `SCHEMA_VERSION` goes to 1.0.0
+- **Shipped:** CLI, MCP server, export/import bundles, PII guard, consent flow
+- **Next:** a ChatGPT route — only if people ask for one. Claude Code, Cursor, Copilot and Windsurf already work; they speak MCP and need no adapter.
+- **Later:** Docker deploy, remote MCP server, revocable sharing
+- **Someday:** discovery and live sync
 
 ## Use as a library
 
