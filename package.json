@@ -1,0 +1,69 @@
+{
+  "name": "memshare",
+  "version": "0.1.0",
+  "description": "Peer-to-peer AI memory sharing between users — with consent. Local-first JSON memory store with an MCP server and CLI.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai-memory",
+    "memory",
+    "claude",
+    "llm",
+    "local-first",
+    "peer-to-peer",
+    "context"
+  ],
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18.17"
+  },
+  "bin": {
+    "memshare": "dist/cli/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsc -p tsconfig.json --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build && npm test && npm run check:docs",
+    "check:docs": "node scripts/check-docs.mjs"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^8.7.2",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "commander": "^15.0.0",
+    "zod": "^4.6.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kampana/memshare.git"
+  },
+  "homepage": "https://github.com/kampana/memshare#readme",
+  "bugs": {
+    "url": "https://github.com/kampana/memshare/issues"
+  },
+  "author": "kampana",
+  "publishConfig": {
+    "access": "public"
+  }
+}

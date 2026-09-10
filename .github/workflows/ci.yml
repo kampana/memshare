@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - run: npm run check:docs
+
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      # The README's quickstart, end to end, on a clean machine.
+      - name: alice shares with bob
+        run: |
+          set -euo pipefail
+          export ALICE=$RUNNER_TEMP/alice BOB=$RUNNER_TEMP/bob
+          M="node dist/cli/index.js"
+          MEMSHARE_DIR=$ALICE $M init --name alice --yes
+          MEMSHARE_DIR=$ALICE $M add "Project X uses PostgreSQL" --tags project-x --visibility shareable
+          MEMSHARE_DIR=$ALICE $M add "My salary is 50000" --tags personal --visibility private
+          MEMSHARE_DIR=$ALICE $M export --tags project-x --for bob --yes
+          BUNDLE=$(ls "$ALICE"/bundles/*.memshare.json | head -1)
+          MEMSHARE_DIR=$BOB $M init --name bob --yes
+          MEMSHARE_DIR=$BOB $M preview "$BUNDLE"
+          MEMSHARE_DIR=$BOB $M import "$BUNDLE" --yes
+          MEMSHARE_DIR=$BOB $M list --json | node -e "
+            let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{
+              const items=JSON.parse(s);
+              if(items.length!==1) throw new Error('expected 1 imported item, got '+items.length);
+              if(items[0].confidence!=='imported') throw new Error('expected confidence=imported');
+              if(items[0].content.includes('salary')) throw new Error('private item leaked');
+              console.log('smoke ok');
+            });"

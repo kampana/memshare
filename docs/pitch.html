@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>memshare — Peer-to-Peer AI Memory Sharing</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-bg: #0a0a0f;
+  --color-surface: #16161f;
+  --color-surface-alt: #1e1e2d;
+  --color-text: #f0f0f5;
+  --color-text-secondary: #a0a0b8;
+  --color-text-muted: #6a6a80;
+  --color-accent: #7c6aff;
+  --color-accent-light: #a99aff;
+  --color-green: #00d68f;
+  --color-red: #ff4d6a;
+  --color-yellow: #ffc233;
+  --color-border: rgba(255,255,255,0.1);
+  --radius-sm: 0.6vmin;
+  --radius-md: 1.5vmin;
+  --radius-lg: 2.5vmin;
+  --radius-xl: 4vmin;
+}
+
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  font-family: 'Poppins', sans-serif;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+body { display: flex; justify-content: center; align-items: center; }
+
+.slide {
+  width: 100vw; height: 56.25vw;
+  max-height: 100vh; max-width: 177.78vh;
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  padding: 7vmin 9vmin;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+}
+.slide.active { display: flex; }
+
+.nav {
+  position: fixed; bottom: 2.5vmin; left: 50%;
+  transform: translateX(-50%);
+  display: flex; align-items: center; gap: 2vmin;
+  z-index: 100;
+}
+.nav-btn {
+  background: rgba(255,255,255,0.08); border: none;
+  color: var(--color-text-secondary); cursor: pointer;
+  font-size: 2vmin; width: 5vmin; height: 5vmin;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+}
+.nav-btn:hover { background: rgba(255,255,255,0.15); color: #fff; }
+.nav-counter {
+  font-size: 1.6vmin; color: var(--color-text-muted);
+  min-width: 8vmin; text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+h1 { font-size: 7vmin; font-weight: 600; line-height: 1.1; }
+h2 { font-size: 5vmin; font-weight: 600; line-height: 1.15; }
+h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
+.subtitle { font-size: 2.8vmin; color: var(--color-text-secondary); line-height: 1.5; margin-top: 2vmin; }
+.body-text { font-size: 2.2vmin; color: var(--color-text-secondary); line-height: 1.6; }
+.accent { color: var(--color-accent-light); }
+.green { color: var(--color-green); }
+.red { color: var(--color-red); }
+.yellow { color: var(--color-yellow); }
+.tag {
+  display: inline-block;
+  font-size: 1.6vmin; font-weight: 600;
+  padding: 0.5vmin 1.8vmin;
+  border-radius: 999px;
+  background: rgba(124,106,255,0.15);
+  color: var(--color-accent-light);
+  margin-bottom: 2.5vmin;
+  letter-spacing: 0.08em;
+}
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 6vmin; align-items: center; }
+.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 3.5vmin; }
+
+.card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 4vmin;
+  border: 1px solid var(--color-border);
+}
+.card-icon { font-size: 5vmin; margin-bottom: 2vmin; display: block; }
+.card h3 { margin-bottom: 1.5vmin; }
+
+.diagram { display: flex; align-items: center; justify-content: center; gap: 2vmin; flex-wrap: wrap; }
+.diagram-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 2vmin 3vmin;
+  text-align: center;
+  font-size: 1.8vmin;
+  color: var(--color-text);
+  min-width: 14vmin;
+}
+.diagram-box.accent-border { border-color: var(--color-accent); background: rgba(124,106,255,0.08); }
+.diagram-box.green-border { border-color: var(--color-green); background: rgba(0,214,143,0.08); }
+.diagram-arrow { font-size: 3vmin; color: var(--color-text-muted); }
+
+.flow-steps { display: flex; flex-direction: column; gap: 2vmin; }
+.flow-step { display: flex; align-items: flex-start; gap: 2.5vmin; }
+.step-num {
+  flex-shrink: 0;
+  width: 5vmin; height: 5vmin;
+  border-radius: 50%;
+  background: rgba(124,106,255,0.15);
+  color: var(--color-accent-light);
+  font-weight: 600; font-size: 2.2vmin;
+  display: flex; align-items: center; justify-content: center;
+}
+.step-content h3 { font-size: 2.5vmin; margin-bottom: 0.5vmin; }
+.step-content p { font-size: 1.9vmin; color: var(--color-text-secondary); }
+
+.compare-table { width: 100%; border-collapse: separate; border-spacing: 0 1vmin; }
+.compare-table th {
+  font-size: 1.8vmin; font-weight: 600; color: var(--color-text-muted);
+  padding: 1.5vmin 2.5vmin; text-align: left;
+}
+.compare-table td {
+  font-size: 1.9vmin; padding: 1.8vmin 2.5vmin;
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+.compare-table td:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); font-weight: 600; color: var(--color-text); }
+.compare-table td:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+.check { color: var(--color-green); font-weight: 600; }
+.cross { color: var(--color-red); font-weight: 600; }
+
+.code-block {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 3vmin 3.5vmin;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 1.8vmin;
+  line-height: 1.8;
+  color: var(--color-text-secondary);
+  text-align: left;
+  overflow: hidden;
+}
+.code-block .cmd { color: var(--color-green); }
+.code-block .flag { color: var(--color-accent-light); }
+.code-block .comment { color: var(--color-text-muted); }
+.code-block .string { color: var(--color-yellow); }
+
+.cover-bg {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 30% 50%, rgba(124,106,255,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, rgba(0,214,143,0.06) 0%, transparent 50%);
+  z-index: 0;
+}
+.cover-content { position: relative; z-index: 1; }
+
+.persona-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 3.5vmin;
+  border: 1px solid var(--color-border);
+}
+.persona-emoji { font-size: 4.5vmin; margin-bottom: 1.5vmin; }
+.persona-card h3 { font-size: 2.2vmin; margin-bottom: 1vmin; }
+.persona-card p { font-size: 1.7vmin; color: var(--color-text-secondary); line-height: 1.5; }
+
+.cta-box {
+  background: linear-gradient(135deg, rgba(124,106,255,0.15), rgba(0,214,143,0.08));
+  border: 1px solid rgba(124,106,255,0.3);
+  border-radius: var(--radius-xl);
+  padding: 5vmin 6vmin;
+  text-align: center;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(2vmin); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.slide.active > * { animation: fadeUp 0.5s ease both; }
+.slide.active > *:nth-child(2) { animation-delay: 0.1s; }
+.slide.active > *:nth-child(3) { animation-delay: 0.2s; }
+.slide.active > *:nth-child(4) { animation-delay: 0.3s; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 — COVER -->
+<div class="slide active" data-slide="1">
+  <div class="cover-bg"></div>
+  <div class="cover-content" style="display:flex; flex-direction:column; justify-content:center; height:100%;">
+    <div class="tag">Open Source</div>
+    <h1 style="font-size:9vmin;">mem<span class="accent">share</span></h1>
+    <p class="subtitle" style="max-width: 65vmin; font-size: 3.2vmin;">
+      Peer-to-peer AI memory sharing between users —<br>
+      with full control, explicit consent, and no vendor lock-in.
+    </p>
+    <p style="margin-top: 4vmin; font-size: 1.8vmin; color: var(--color-text-muted);">
+      Cross-platform &nbsp;·&nbsp; Model-agnostic &nbsp;·&nbsp; Self-hosted &nbsp;·&nbsp; Consent-first
+    </p>
+  </div>
+</div>
+
+<!-- SLIDE 2 — THE PROBLEM -->
+<div class="slide" data-slide="2">
+  <div class="tag">The Problem</div>
+  <h2>Your AI's memory is <span class="red">trapped</span></h2>
+  <p class="subtitle" style="margin-bottom: 4vmin;">Every vendor builds memory in its own proprietary, closed format.</p>
+  <div class="three-col">
+    <div class="card">
+      <span class="card-icon">🔒</span>
+      <h3>Locked to one platform</h3>
+      <p class="body-text">Spent 6 months "training" Claude or ChatGPT on your preferences? Want to switch? Start from zero.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🏝️</span>
+      <h3>Isolated to one user</h3>
+      <p class="body-text">Every AI memory product is per-user by design. There's no way to share context with a colleague or friend.</p>
+    </div>
+    <div class="card">
+      <span class="card-icon">🤷</span>
+      <h3>No real control</h3>
+      <p class="body-text">"Deleted" is a promise, not a guarantee. You don't know what's saved, where, or who has access.</p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3 — CURRENT LANDSCAPE -->
+<div class="slide" data-slide="3">
+  <div class="tag">What Exists Today</div>
+  <h2>Current solutions solve <span class="yellow">half</span> the problem</h2>
+  <p class="subtitle" style="margin-bottom: 3vmin;">There are powerful memory tools out there — but none solve sharing between people.</p>
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Tool</th>
+        <th>Cross-model portability</th>
+        <th>Self-hosted</th>
+        <th>User-to-user sharing</th>
+        <th>Consent flow</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Claude / ChatGPT Memory</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Mem0</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>OMP (Open Memory Protocol)</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td>Portable Memory (MacPaw)</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+        <td class="cross">✗</td>
+        <td class="cross">✗</td>
+      </tr>
+      <tr>
+        <td style="color: var(--color-accent-light);">memshare</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+        <td class="check">✓</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- SLIDE 4 — THE MISSING PIECE -->
+<div class="slide" data-slide="4">
+  <div class="tag">The Missing Piece</div>
+  <div class="two-col">
+    <div>
+      <h2>Memory sharing<br><span class="accent">between people</span></h2>
+      <p class="subtitle">Not just "my memory across my tools".<br>
+      "I choose exactly what to share with someone else, with preview and approval on both sides."</p>
+      <div style="margin-top: 3vmin; display: flex; flex-direction: column; gap: 1.2vmin;">
+        <p class="body-text"><span class="green">✓</span>&nbsp; Between two different Claude accounts</p>
+        <p class="body-text"><span class="green">✓</span>&nbsp; Between Claude and ChatGPT</p>
+        <p class="body-text"><span class="green">✓</span>&nbsp; Between any two MCP-compatible AI tools</p>
+        <p class="body-text"><span class="green">✓</span>&nbsp; No central server — everyone runs their own</p>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2vmin;">
+      <div class="diagram" style="flex-direction: column;">
+        <div style="display: flex; align-items: center; gap: 2vmin;">
+          <div class="diagram-box">🧑 Alice<br><span style="font-size:1.4vmin; color: var(--color-text-muted);">Claude</span></div>
+          <span class="diagram-arrow">←MCP→</span>
+          <div class="diagram-box accent-border">Memory<br>Server A</div>
+        </div>
+        <div style="font-size: 3vmin; color: var(--color-accent);">↕ bundle</div>
+        <div style="display: flex; align-items: center; gap: 2vmin;">
+          <div class="diagram-box">🧑 Bob<br><span style="font-size:1.4vmin; color: var(--color-text-muted);">ChatGPT</span></div>
+          <span class="diagram-arrow">←MCP→</span>
+          <div class="diagram-box green-border">Memory<br>Server B</div>
+        </div>
+      </div>
+      <p style="font-size: 1.5vmin; color: var(--color-text-muted); text-align: center; max-width: 30vmin;">
+        Each person runs their server locally.<br>No central server sees everything.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5 — CROSS-PLATFORM -->
+<div class="slide" data-slide="5">
+  <div class="tag">Cross-Platform · Model-Agnostic</div>
+  <h2>Not tied to Claude.<br>Not tied to <span class="accent">anyone</span>.</h2>
+  <p class="subtitle" style="margin-bottom: 3vmin;">Your memory is local JSON files. The MCP server is just one of several adapters.</p>
+  <div style="display: flex; flex-direction: column; align-items: center; gap: 2.5vmin; margin-top: 1vmin;">
+    <div style="display: flex; align-items: center; gap: 3vmin; flex-wrap: wrap; justify-content: center;">
+      <div class="diagram-box accent-border" style="min-width: 20vmin; padding: 2.5vmin 3.5vmin;">
+        <div style="font-size: 3vmin; margin-bottom: 0.5vmin;">🧠</div>
+        <div style="font-size: 2vmin; font-weight: 600;">~/.memshare/</div>
+        <div style="font-size: 1.4vmin; color: var(--color-text-muted);">JSON files — the actual product</div>
+      </div>
+    </div>
+    <div style="font-size: 2.5vmin; color: var(--color-text-muted);">▲ &nbsp; ▲ &nbsp; ▲ &nbsp; ▲</div>
+    <div style="display: flex; gap: 2.5vmin; flex-wrap: wrap; justify-content: center;">
+      <div class="diagram-box" style="min-width: 16vmin;">
+        <div style="font-size: 1.8vmin; font-weight: 600;">MCP Server</div>
+        <div style="font-size: 1.3vmin; color: var(--color-text-muted);">Claude · Cursor · VS Code<br>Windsurf · any MCP tool</div>
+      </div>
+      <div class="diagram-box" style="min-width: 16vmin;">
+        <div style="font-size: 1.8vmin; font-weight: 600;">CLI</div>
+        <div style="font-size: 1.3vmin; color: var(--color-text-muted);">list · export · import<br>preview · add</div>
+      </div>
+      <div class="diagram-box" style="min-width: 16vmin;">
+        <div style="font-size: 1.8vmin; font-weight: 600;">ChatGPT Adapter</div>
+        <div style="font-size: 1.3vmin; color: var(--color-text-muted);">Custom GPT action<br>or browser extension</div>
+      </div>
+      <div class="diagram-box" style="min-width: 16vmin;">
+        <div style="font-size: 1.8vmin; font-weight: 600;">System Prompt Inject</div>
+        <div style="font-size: 1.3vmin; color: var(--color-text-muted);">Ollama · Gemini<br>any LLM with an API</div>
+      </div>
+    </div>
+  </div>
+  <p style="text-align: center; margin-top: 3vmin; font-size: 1.8vmin; color: var(--color-text-muted);">
+    If MCP disappears tomorrow — your data is still here. Just files.
+  </p>
+</div>
+
+<!-- SLIDE 6 — HOW MEMORY GETS POPULATED -->
+<div class="slide" data-slide="6">
+  <div class="tag">How Memory Gets Built</div>
+  <h2>Claude suggests. <span class="accent">You decide.</span></h2>
+  <p class="subtitle" style="margin-bottom: 2.5vmin;">Three modes — you choose the level of control.</p>
+  <div class="three-col" style="margin-bottom: 2.5vmin;">
+    <div class="card" style="border-color: var(--color-text-muted);">
+      <div style="display: flex; align-items: center; gap: 1.5vmin; margin-bottom: 1.5vmin;">
+        <span style="font-size: 3vmin;">🤖</span>
+        <h3 style="font-size: 2.2vmin;">Auto</h3>
+      </div>
+      <p class="body-text">Claude saves automatically whatever it thinks is important. Fastest, least control.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
+        Claude silently calls memory_set()
+      </div>
+    </div>
+    <div class="card" style="border-color: var(--color-accent);">
+      <div style="display: flex; align-items: center; gap: 1.5vmin; margin-bottom: 1.5vmin;">
+        <span style="font-size: 3vmin;">💬</span>
+        <h3 style="font-size: 2.2vmin; color: var(--color-accent-light);">Suggest <span style="font-size: 1.4vmin; color: var(--color-text-muted);">(default)</span></h3>
+      </div>
+      <p class="body-text">Claude proposes what to save at the end of a conversation. You approve, edit, or skip.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
+        Claude calls memory_suggest() → user approves
+      </div>
+    </div>
+    <div class="card" style="border-color: var(--color-text-muted);">
+      <div style="display: flex; align-items: center; gap: 1.5vmin; margin-bottom: 1.5vmin;">
+        <span style="font-size: 3vmin;">👆</span>
+        <h3 style="font-size: 2.2vmin;">Manual</h3>
+      </div>
+      <p class="body-text">"Save this to memory" — only saved when you explicitly ask. Maximum control.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
+        User says "remember this" → Claude calls memory_set()
+      </div>
+    </div>
+  </div>
+  <div class="card" style="padding: 3vmin 4vmin; background: var(--color-surface-alt); border-color: var(--color-accent); max-width: 80vmin; margin: 0 auto;">
+    <p style="font-size: 1.6vmin; color: var(--color-text-muted); margin-bottom: 1.5vmin; text-align: center;">Suggest mode — what it looks like in practice:</p>
+    <div style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.5vmin; line-height: 1.9; color: var(--color-text-secondary);">
+      <span style="color: var(--color-accent-light);">Claude:</span> I noticed a few things worth saving from this conversation:<br>
+      <br>
+      &nbsp;&nbsp;<span style="color: var(--color-green);">1.</span> "Auth service uses JWT with 15min refresh" → <span style="color: var(--color-text-muted);">tags: project-x, auth</span><br>
+      &nbsp;&nbsp;<span style="color: var(--color-green);">2.</span> "Team decided Postgres over MySQL" → <span style="color: var(--color-text-muted);">tags: project-x, db</span><br>
+      &nbsp;&nbsp;<span style="color: var(--color-green);">3.</span> "You prefer functional style over OOP" → <span style="color: var(--color-text-muted);">tags: preferences</span><br>
+      <br>
+      &nbsp;&nbsp;Save all? Save some? Skip?<br>
+      <br>
+      <span style="color: var(--color-yellow);">You:</span> save 1 and 2, skip 3
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 7 — ARCHITECTURE -->
+<div class="slide" data-slide="7">
+  <div class="tag">Architecture</div>
+  <h2>Federated, <span class="green">Self-Hosted</span></h2>
+  <p class="subtitle" style="margin-bottom: 3vmin;">Starts local on your machine. Same code deploys to a team server when you're ready.</p>
+  <div class="two-col">
+    <div style="display: flex; flex-direction: column; gap: 2.5vmin;">
+      <div class="card">
+        <span class="card-icon" style="font-size: 3.5vmin;">📦</span>
+        <h3 style="font-size: 2.3vmin;">MCP Server (local process)</h3>
+        <p class="body-text">Not a real server — a local process that Claude starts and stops automatically. No open ports, no Docker, no cloud.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon" style="font-size: 3.5vmin;">🗂️</span>
+        <h3 style="font-size: 2.3vmin;">Local JSON Files</h3>
+        <p class="body-text">Human-readable, diffable, git-friendly. Sync between devices via Dropbox or git.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon" style="font-size: 3.5vmin;">🤝</span>
+        <h3 style="font-size: 2.3vmin;">Bundle Exchange</h3>
+        <p class="body-text">Selective export → preview → approval → import. Send the file however you want — email, Slack, AirDrop.</p>
+      </div>
+    </div>
+    <div class="code-block" style="font-size: 1.5vmin; align-self: center;">
+      <span class="comment"># Install — no server, no signup</span><br>
+      <span class="cmd">npm</span> install -g memshare<br>
+      <span class="cmd">memshare</span> init<br>
+      <br>
+      <span class="comment"># Connect to Claude</span><br>
+      <span class="cmd">claude</span> mcp add memshare <span class="flag">--</span> npx memshare serve<br>
+      <br>
+      <span class="comment"># See what's in your memory</span><br>
+      <span class="cmd">memshare</span> list<br>
+      <span class="cmd">memshare</span> list <span class="flag">--tags</span> <span class="string">"project-x"</span><br>
+      <br>
+      <span class="comment"># Preview before you share anything</span><br>
+      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--preview</span><br>
+      <br>
+      <span class="comment"># Export when ready</span><br>
+      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"bob"</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8 — CONSENT FLOW -->
+<div class="slide" data-slide="8">
+  <div class="tag">Consent Flow</div>
+  <h2>Full control — <span class="accent">on both sides</span></h2>
+  <div class="two-col" style="margin-top: 3vmin;">
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Alice picks what to share</h3>
+          <p>Every memory item is tagged <span class="accent">private</span> or <span class="green">shareable</span> at creation time. Not all-or-nothing.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Automatic redaction</h3>
+          <p>Sensitive PII (health, financial, government IDs) is blocked automatically before export. Conservative by default.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Exact preview</h3>
+          <p>Alice sees exactly what will be included in the bundle before final approval.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Bob receives and chooses</h3>
+          <p>Bob sees a preview of incoming items. Accepts or rejects per-item. Smart merge, no overwrites.</p>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 2vmin;">
+      <div class="code-block" style="font-size: 1.5vmin;">
+        <span class="comment"># Alice exports selected memories</span><br>
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x,architecture"</span> \<br>
+        &nbsp;&nbsp;<span class="flag">--for</span> <span class="string">"bob"</span> \<br>
+        &nbsp;&nbsp;<span class="flag">--expires</span> <span class="string">"7d"</span><br>
+        <br>
+        <span class="comment"># → bundle-a3f8.memshare.json</span><br>
+        <span class="comment"># Alice sends the file to Bob</span>
+      </div>
+      <div class="code-block" style="font-size: 1.5vmin;">
+        <span class="comment"># Bob previews before importing</span><br>
+        <span class="cmd">memshare</span> preview <span class="string">bundle-a3f8.memshare.json</span><br>
+        <br>
+        <span class="comment"># Bob sees each item and chooses</span><br>
+        <span class="cmd">memshare</span> import <span class="string">bundle-a3f8.memshare.json</span><br>
+        <span class="comment"># → interactive: accept/reject per item</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9 — USE CASES: BETWEEN PEOPLE -->
+<div class="slide" data-slide="9">
+  <div class="tag">Use Cases</div>
+  <h2>Sharing <span class="accent">between people</span></h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; margin-top: 3vmin;">
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🆕</span>
+        <h3 style="font-size: 2.3vmin;">Onboarding a new teammate</h3>
+      </div>
+      <p class="body-text">Dana joins the team. Instead of spending a week "teaching" her Claude about the project, the tech lead shares a bundle — internal terms, architecture decisions, code conventions.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x,onboarding"</span> <span class="flag">--for</span> <span class="string">"dana"</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🔄</span>
+        <h3 style="font-size: 2.3vmin;">Project handoff between freelancers</h3>
+      </div>
+      <p class="body-text">Uri finished his part of the project. Instead of the next freelancer starting from zero, Uri shares a bundle — client preferences, decision history, technical gotchas.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"client-acme"</span> <span class="flag">--expires</span> <span class="string">"30d"</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🧑‍🤝‍🧑</span>
+        <h3 style="font-size: 2.3vmin;">Pair programming with shared AI</h3>
+      </div>
+      <p class="body-text">Two devs working on the same module. Both want their AI to know the same API design and the same decisions — without each explaining it separately.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"auth-module,api-design"</span> <span class="flag">--for</span> <span class="string">"noa"</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🎓</span>
+        <h3 style="font-size: 2.3vmin;">Mentor shares knowledge with mentee</h3>
+      </div>
+      <p class="body-text">A senior engineer "taught" their Claude about best practices, design patterns, and review guidelines. Instead of writing a guide — they share the memory directly.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"best-practices,code-review"</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10 — USE CASES: BETWEEN MODELS -->
+<div class="slide" data-slide="10">
+  <div class="tag">Use Cases</div>
+  <h2>Sharing <span class="green">between models and sessions</span></h2>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; margin-top: 3vmin;">
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🔀</span>
+        <h3 style="font-size: 2.3vmin;">Switching from ChatGPT to Claude</h3>
+      </div>
+      <p class="body-text">Spent months with ChatGPT and want to try Claude. Instead of starting over — export from ChatGPT, import to Claude. All preferences, style, and context carry over.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="cmd">memshare</span> export <span class="flag">--from</span> <span class="string">"chatgpt"</span><br>
+        <span class="cmd">memshare</span> import <span class="string">bundle-a3f8.memshare.json</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">🪟</span>
+        <h3 style="font-size: 2.3vmin;">Between distant Claude sessions</h3>
+      </div>
+      <p class="body-text">Long conversation with rich context. Open a new chat and have to explain everything again. With memshare — the MCP server auto-injects relevant context.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="comment"># MCP server auto-injects relevant context</span><br>
+        <span class="cmd">memshare</span> recall <span class="flag">--tags</span> <span class="string">"project-x"</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">⚡</span>
+        <h3 style="font-size: 2.3vmin;">Using multiple models in parallel</h3>
+      </div>
+      <p class="body-text">Claude for code, ChatGPT for research, Gemini for document analysis. All read from the same local memory store — no duplicating context three times.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="comment"># One memory, every model reads it</span><br>
+        <span class="cmd">memshare</span> serve <span class="comment"># → Claude, GPT, Gemini all connect</span>
+      </div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
+      <div style="display: flex; align-items: center; gap: 1.5vmin;">
+        <span style="font-size: 3.5vmin;">💻</span>
+        <h3 style="font-size: 2.3vmin;">Between devices</h3>
+      </div>
+      <p class="body-text">Working on the laptop at home and the desktop at the office. The memory store syncs via git or Dropbox — because it's just JSON files.</p>
+      <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
+        <span class="comment"># Sync via git — it's just files</span><br>
+        <span class="cmd">cd</span> ~/.memshare && <span class="cmd">git</span> push
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11 — DEPLOYMENT EVOLUTION -->
+<div class="slide" data-slide="11">
+  <div class="tag">Deployment</div>
+  <h2>Same code. <span class="accent">Your choice</span> where it runs.</h2>
+  <p class="subtitle" style="margin-bottom: 2.5vmin;">Four ways to run it. Same protocol, same files, no code changes between them — pick the one that fits, switch whenever.</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 2.5vmin; margin-bottom: 2vmin;">
+    <div class="card" style="padding: 2.5vmin; text-align: center; border-color: var(--color-green);">
+      <p style="font-size: 1.4vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1vmin;">WE SUGGEST STARTING HERE</p>
+      <span style="font-size: 3vmin; display: block; margin-bottom: 1vmin;">💻</span>
+      <h3 style="font-size: 2vmin; margin-bottom: 1vmin;">Local</h3>
+      <p style="font-size: 1.3vmin; color: var(--color-text-secondary); line-height: 1.5;">Files on your laptop.<br>MCP as local process.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm);">
+        <p style="font-size: 1.2vmin; color: var(--color-text-muted);">Sharing via:</p>
+        <p style="font-size: 1.3vmin; color: var(--color-text-secondary);">Export file → email/Slack → import file</p>
+      </div>
+    </div>
+    <div class="card" style="padding: 2.5vmin; text-align: center;">
+      <p style="font-size: 1.4vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1vmin;">OR</p>
+      <span style="font-size: 3vmin; display: block; margin-bottom: 1vmin;">📂</span>
+      <h3 style="font-size: 2vmin; margin-bottom: 1vmin;">Shared folder</h3>
+      <p style="font-size: 1.3vmin; color: var(--color-text-secondary); line-height: 1.5;">Dropbox, Google Drive,<br>or a git repo.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm);">
+        <p style="font-size: 1.2vmin; color: var(--color-text-muted);">Sharing via:</p>
+        <p style="font-size: 1.3vmin; color: var(--color-text-secondary);">Auto-sync through the shared folder</p>
+      </div>
+    </div>
+    <div class="card" style="padding: 2.5vmin; text-align: center;">
+      <p style="font-size: 1.4vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1vmin;">OR</p>
+      <span style="font-size: 3vmin; display: block; margin-bottom: 1vmin;">🖥️</span>
+      <h3 style="font-size: 2vmin; margin-bottom: 1vmin;">Team server</h3>
+      <p style="font-size: 1.3vmin; color: var(--color-text-secondary); line-height: 1.5;">Docker on your VPS.<br>Team connects remotely.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm);">
+        <p style="font-size: 1.2vmin; color: var(--color-text-muted);">Sharing via:</p>
+        <p style="font-size: 1.3vmin; color: var(--color-text-secondary);">By username on the server</p>
+      </div>
+    </div>
+    <div class="card" style="padding: 2.5vmin; text-align: center;">
+      <p style="font-size: 1.4vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1vmin;">OR</p>
+      <span style="font-size: 3vmin; display: block; margin-bottom: 1vmin;">☁️</span>
+      <h3 style="font-size: 2vmin; margin-bottom: 1vmin;">Hosted service</h3>
+      <p style="font-size: 1.3vmin; color: var(--color-text-secondary); line-height: 1.5;">Managed infra.<br>Same protocol, zero ops.</p>
+      <div style="margin-top: 1.5vmin; padding: 1vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm);">
+        <p style="font-size: 1.2vmin; color: var(--color-text-muted);">Sharing via:</p>
+        <p style="font-size: 1.3vmin; color: var(--color-text-secondary);">Username, invite link, or email</p>
+      </div>
+    </div>
+  </div>
+  <div class="two-col" style="gap: 3vmin;">
+    <div class="code-block" style="font-size: 1.3vmin;">
+      <span class="comment"># Local: export a file, send it yourself</span><br>
+      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"bob"</span><br>
+      <span class="comment"># → bundle-a3f8.json — send via Slack, email, etc.</span>
+    </div>
+    <div class="code-block" style="font-size: 1.3vmin;">
+      <span class="comment"># Team server: share directly, no file to send</span><br>
+      <span class="cmd">memshare</span> share <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--with</span> <span class="string">"bob"</span><br>
+      <br>
+      <span class="comment"># Bob sees it in his inbox</span><br>
+      <span class="cmd">memshare</span> inbox<br>
+      <span class="comment"># → Alice shared 3 items (pending)</span><br>
+      <span class="cmd">memshare</span> accept <span class="string">alice/project-x</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12 — CTA / OPEN SOURCE -->
+<div class="slide" data-slide="12">
+  <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+    <div class="cta-box" style="max-width: 75vmin;">
+      <div class="tag" style="margin-bottom: 3vmin;">Open Source · MIT License</div>
+      <h1 style="font-size: 7vmin; margin-bottom: 2vmin;">mem<span class="accent">share</span></h1>
+      <p class="subtitle" style="font-size: 2.6vmin; margin-bottom: 4vmin; max-width: 55vmin; margin-left: auto; margin-right: auto;">
+        Your memory belongs to you.<br>
+        You decide what to share, with whom, and for how long.
+      </p>
+      <div style="display: flex; gap: 3vmin; justify-content: center; flex-wrap: wrap;">
+        <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
+          <p style="font-size: 2.2vmin; font-weight: 600;">🚀 MVP</p>
+          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">CLI + MCP Server<br>Export/Import bundles</p>
+        </div>
+        <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
+          <p style="font-size: 2.2vmin; font-weight: 600;">📡 v0.2</p>
+          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">Adapters: Claude, ChatGPT<br>Cursor, Copilot</p>
+        </div>
+        <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
+          <p style="font-size: 2.2vmin; font-weight: 600;">🖥️ v0.3</p>
+          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">Docker deploy<br>Remote MCP server</p>
+        </div>
+        <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
+          <p style="font-size: 2.2vmin; font-weight: 600;">🌐 v0.4</p>
+          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">Discovery + Live sync<br>Real-time sharing</p>
+        </div>
+      </div>
+    </div>
+    <p style="margin-top: 4vmin; font-size: 1.8vmin; color: var(--color-text-muted);">
+      github.com/<span style="color: var(--color-text-secondary);">kampana</span>/memshare
+    </p>
+  </div>
+</div>
+
+<!-- NAVIGATION -->
+<div class="nav">
+  <button class="nav-btn" id="prev" aria-label="Previous">◀</button>
+  <span class="nav-counter" id="counter">1 / 13</span>
+  <button class="nav-btn" id="next" aria-label="Next">▶</button>
+</div>
+
+<script>
+(function() {
+  const slides = document.querySelectorAll('.slide');
+  const counter = document.getElementById('counter');
+  const total = slides.length;
+  let current = 0;
+
+  function show(idx) {
+    if (idx < 0 || idx >= total) return;
+    slides[current].classList.remove('active');
+    current = idx;
+    slides[current].classList.add('active');
+    counter.textContent = (current + 1) + ' / ' + total;
+  }
+
+  document.getElementById('prev').addEventListener('click', () => show(current - 1));
+  document.getElementById('next').addEventListener('click', () => show(current + 1));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft' || e.key === ' ') {
+      e.preventDefault();
+      if (e.key === 'ArrowLeft') show(current - 1);
+      else show(current + 1);
+    }
+  });
+
+  let startX = 0;
+  document.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; });
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) {
+      if (dx < 0) show(current + 1);
+      else show(current - 1);
+    }
+  });
+})();
+</script>
+</body>
+</html>

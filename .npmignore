@@ -1,0 +1,6 @@
+# `files` in package.json is the source of truth; this only guards stray artifacts.
+src/
+test/
+.github/
+tsconfig.json
+vitest.config.ts
