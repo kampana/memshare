@@ -66,15 +66,17 @@ memshare list
 memshare list --tags project-x
 ```
 
-## Try it without installing anything
+## Try it in a sandbox first
 
-The whole flow — capture, consent, PII block, export, import — in a throwaway directory that touches nothing:
+The whole flow — capture, the consent step, PII getting blocked, export, per-item import — against throwaway stores:
 
 ```bash
 git clone https://github.com/kampana/memshare.git
 cd memshare && npm install && npm run build
 bash examples/try-it.sh
 ```
+
+This does install the project's dependencies locally, in the folder you cloned. What it does **not** do: install anything globally, create or modify `~/.memshare`, or add anything to your Claude config. It builds two fake stores under a temp directory and deletes cleanly. Nothing carries over to a real setup.
 
 ## Sharing with someone else
 
