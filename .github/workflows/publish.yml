@@ -1,0 +1,60 @@
+name: Publish to npm
+
+# Publishing happens from CI, on a tag, with no credentials stored anywhere.
+# npm's trusted publishing exchanges GitHub's OIDC token for short-lived
+# publish rights, so there is no long-lived npm token to leak, rotate, or
+# accidentally paste somewhere.
+#
+# One-time setup on npmjs.com:
+#   memshare-mcp → Settings → Trusted Publisher → GitHub Actions
+#     Organization or user:  kampana
+#     Repository:            memshare
+#     Workflow filename:     publish.yml
+#
+# To release after that:
+#   npm version patch        # bumps package.json and creates the tag
+#   git push && git push --tags
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # required for trusted publishing
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs a recent npm.
+      - run: npm install -g npm@latest
+
+      - run: npm ci
+
+      # Never publish something that does not build, pass, or match its docs.
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+      - run: npm run check:docs
+
+      - name: Refuse to publish if the tag does not match package.json
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME#v}"
+          pkg="$(node -p "require('./package.json').version")"
+          if [ "$tag" != "$pkg" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match package.json version $pkg." >&2
+            exit 1
+          fi
+          echo "Publishing $pkg"
+
+      - run: npm publish --access public

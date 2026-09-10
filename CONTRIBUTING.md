@@ -58,3 +58,14 @@ Commands that are deliberately future-facing (the team-server tier, for example)
 Please do not open a public issue for anything that could expose someone's memories. Open a private security advisory on the repository instead.
 
 > Verify deck changes against the **live URL**, not just the local file. GitHub Pages takes ~40s to redeploy and caches.
+
+## Releasing
+
+Publishing runs from GitHub Actions using npm trusted publishing (OIDC). There is no npm token in the repository, in CI secrets, or on anyone's laptop.
+
+```bash
+npm version patch      # or minor — bumps package.json and tags
+git push && git push --tags
+```
+
+The workflow builds, typechecks, runs the tests and `check:docs`, refuses to publish if the tag does not match `package.json`, and only then publishes. Remember to bump `VERSION` in `src/cli/index.ts` and the version in `src/mcp/server.ts` too — `check:docs` fails the release if you forget.
