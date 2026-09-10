@@ -101,7 +101,7 @@ export function validateBundle(raw: unknown, now: Date = new Date()): Validation
   } else if (theirMajor > ourMajor) {
     errors.push(
       `Bundle uses schema ${bundle.metadata.schemaVersion}, this memshare understands ` +
-        `${SCHEMA_VERSION}. Upgrade with: npm install -g memshare`,
+        `${SCHEMA_VERSION}. Upgrade with: npm install -g memshare-cli`,
     );
   } else if (bundle.metadata.schemaVersion !== SCHEMA_VERSION) {
     warnings.push(

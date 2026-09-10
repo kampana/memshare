@@ -2,7 +2,7 @@
 
 **Peer-to-peer AI memory sharing between users — with consent.**
 
-[![npm](https://img.shields.io/npm/v/memshare.svg)](https://www.npmjs.com/package/memshare)
+[![npm](https://img.shields.io/npm/v/memshare-cli.svg)](https://www.npmjs.com/package/memshare-cli)
 [![CI](https://github.com/kampana/memshare/actions/workflows/ci.yml/badge.svg)](https://github.com/kampana/memshare/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -17,14 +17,14 @@ No central server. No cloud. No signup. Your memories are plain JSON files on yo
 ## 30-second quickstart
 
 ```bash
-npm install -g memshare
+npm install -g memshare-cli
 memshare init
 
 # Connect it to Claude Code
-claude mcp add memshare -- npx -y memshare serve
+claude mcp add memshare -- npx -y memshare-cli serve
 
 # Or add it to any MCP client's config:
-#   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare", "serve"] } } }
+#   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-cli", "serve"] } } }
 ```
 
 Then talk to your AI normally. Ask it *"what do you know about me?"* and it will call `memory_get`. Tell it *"remember that I like dark mode"* and it will call `memory_set`.
@@ -170,7 +170,7 @@ The same code, four ways to run it — pick one, switch whenever:
 ## Use as a library
 
 ```ts
-import { MemoryStore, selectForExport, planImport } from "memshare";
+import { MemoryStore, selectForExport, planImport } from "memshare-cli";
 
 const store = new MemoryStore();
 await store.add({ content: "Team chose Postgres over MySQL", tags: ["db"] });

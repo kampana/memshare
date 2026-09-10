@@ -121,7 +121,7 @@ program
     console.log(info(`PII guard:    ${config.autoRedactPII ? "on" : "off"}`));
     console.log();
     console.log(heading("Next:"));
-    console.log(`  claude mcp add memshare -- npx -y memshare serve`);
+    console.log(`  claude mcp add memshare -- npx -y memshare-cli serve`);
     console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
     console.log();
   });

@@ -354,3 +354,14 @@ Optional, so bundles from a client that does not write it still validate.
 ## Not in v0.1.0
 
 The team-server tier from the pitch deck — `memshare share --with`, `memshare inbox`, `memshare accept` — is future work. See the roadmap in the README.
+
+## npm package name
+
+Published as **`memshare-cli`**, not `memshare`. The name `memshare` was published by an unrelated project in 2021 and unpublished that November; npm permanently reserves unpublished names, so the registry refuses it with a 409 for everyone, the original owner included.
+
+The installed binary is still `memshare` — only the install line differs:
+
+```
+npm install -g memshare-cli
+claude mcp add memshare -- npx -y memshare-cli serve
+```
