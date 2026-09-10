@@ -428,3 +428,24 @@ The pitch previously showed this as `export --from chatgpt` then `import`. That 
 2. **Export/import is the wrong mechanism between your own tools anyway.** Every MCP client on your machine reads the *same* store. Switching from Cursor to Claude Code requires no migration at all — the memories are already there. Bundles are for moving memory between *people*, not between one person's tools.
 
 The deck now says that instead.
+
+## Tags name themselves
+
+The spec left tag naming entirely to the model: `memory_set` simply took a `tags` array. That is a silent failure mode, because tags are the whole sharing mechanism. `export --tags project-x` matches nothing if this session happened to call it `projectx` — and nothing tells the user, the export just comes back empty. Between two people it is worse: Dana's `project-x` and Sam's `proj-x` never line up.
+
+**The project tag is now derived, not invented.** The MCP client launches the server in the working directory, so `detectProjectTag()` walks up to the git checkout and slugifies its name — `project-x` from `.../Project X/src/auth`. Every tool, session and machine working on the same repository produces the same tag.
+
+Guards: it returns nothing for a home directory or a filesystem root, so memories are not all tagged with a username, and nothing for uninformative folder names (`src`, `work`, `tmp`, `workspace`). Controlled by `autoProjectTag` in `config.json`, default true.
+
+The `tags` parameter description now tells the model to supply subject-matter tags only, to leave the project name alone, and to call `memory_list_tags` and reuse what already exists.
+
+**`memshare tags --rename <from> --to <to>`** merges near-duplicates that slip through anyway.
+
+## On "adapters"
+
+The roadmap said v0.3 was "adapters for Claude, ChatGPT, Cursor, Copilot". Three of those need no adapter at all: Claude Code, Cursor, Copilot and Windsurf speak MCP, so `memshare serve` already reaches them today. That is the entire reason for building on MCP.
+
+The real v0.3 work is the two cases MCP does not cover:
+
+- **ChatGPT**, which cannot launch a local stdio process. It needs a Custom GPT action against an HTTPS endpoint, or a browser extension — and both sit awkwardly beside "no server, nothing leaves your machine".
+- **API-only models** (Gemini, Ollama, anything without MCP), where the "adapter" is really `memshare recall` piped into a system prompt. That already works; it needs documenting more than building.

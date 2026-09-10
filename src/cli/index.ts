@@ -7,6 +7,7 @@ import { Command, Option } from "commander";
 import { summarisePII } from "../memory/redact.js";
 import {
   MemoryStore,
+  normaliseTags,
   parseDuration,
   parseTagList,
   resolveMemoryDir,
@@ -36,7 +37,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.2.4";
+const VERSION = "0.2.5";
 
 const program = new Command();
 
@@ -280,9 +281,37 @@ program
 
 program
   .command("tags")
-  .description("list every tag in the store")
-  .action(async () => {
+  .description("list every tag, or merge one into another")
+  .option("--rename <from>", "the tag to replace (use with --to)")
+  .option("--to <to>", "the tag to replace it with")
+  .action(async (opts: { rename?: string; to?: string }) => {
     const s = await requireStore();
+
+    if (opts.rename || opts.to) {
+      if (!opts.rename || !opts.to) {
+        throw new UserError("Both --rename and --to are needed.");
+      }
+      const [from] = normaliseTags([opts.rename]);
+      const [to] = normaliseTags([opts.to]);
+      if (!from || !to) throw new UserError("Tag names cannot be empty.");
+      if (from === to) throw new UserError("Those are the same tag.");
+
+      // Near-duplicate tags ("project-x" / "projectx") silently break sharing,
+      // because an export filtered on one simply misses the other.
+      const affected = (await s.all()).filter((i) => i.tags.includes(from));
+      if (affected.length === 0) {
+        console.log(info(`No memories carry the tag "${from}".`));
+        process.exitCode = 1;
+        return;
+      }
+      for (const item of affected) {
+        const tags = item.tags.map((t) => (t === from ? to : t));
+        await s.update(item.id, { tags });
+      }
+      console.log(ok(`Renamed ${c.bold(from)} to ${c.bold(to)} on ${affected.length} item(s).`));
+      return;
+    }
+
     const tags = await s.listTags();
     console.log(tags.length === 0 ? info("No tags yet.") : tags.join("\n"));
   });

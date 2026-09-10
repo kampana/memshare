@@ -2,6 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
+import { detectProjectTag } from "../memory/project.js";
 import { MemoryStore } from "../memory/store.js";
 import { Visibility, type Mode } from "../memory/types.js";
 
@@ -28,6 +29,13 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   const config = await store.readConfig();
   const modeNote = MODE_NOTES[config.mode];
 
+  // The client launches this server in the project directory, so the checkout
+  // name is a tag every tool and every session agrees on. Without it the model
+  // invents a name each time and `export --tags` silently matches nothing.
+  const projectTag = config.autoProjectTag ? detectProjectTag() : undefined;
+  const withProject = (tags: string[]): string[] =>
+    projectTag && !tags.includes(projectTag) ? [projectTag, ...tags] : tags;
+
   /**
    * Which tool is actually writing. The client names itself in the initialize
    * handshake ("claude-code", "cursor-vscode", ...), and recording it is what
@@ -40,7 +48,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.2.4" },
+    { name: "memshare", version: "0.2.5" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -80,7 +88,11 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         tags: z
           .array(z.string())
           .default([])
-          .describe("Short lowercase topic tags, e.g. ['project-x', 'auth']."),
+          .describe(
+            "Short lowercase topic tags for the subject matter, e.g. ['auth', 'deploy']. " +
+              "Do not invent a name for the project or repository -- that tag is added automatically. " +
+              "Call memory_list_tags first and reuse existing tags rather than near-duplicates.",
+          ),
         visibility: Visibility.optional().describe(
           "'private' (default) never leaves the machine. 'shareable' may be included in an export the user approves.",
         ),
@@ -91,7 +103,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       // In suggest mode a direct write would bypass the user's consent, so it
       // becomes a suggestion instead of an error.
       if (config.mode === "suggest") {
-        const [queued] = await store.addSuggestions([{ content, tags }], { tool: sourceTool() });
+        const [queued] = await store.addSuggestions([{ content, tags: withProject(tags) }], { tool: sourceTool() });
         return text(
           queued
             ? `Queued for the user's approval (suggest mode). It is not saved yet; the user reviews it with \`memshare review\`. id: ${queued.id}`
@@ -101,7 +113,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
 
       const item = await store.add({
         content,
-        tags,
+        tags: withProject(tags),
         ...(visibility ? { visibility } : {}),
         confidence: "stated",
         source: { tool: sourceTool() },
@@ -165,7 +177,10 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       annotations: { readOnlyHint: false, destructiveHint: false },
     },
     async ({ suggestions }) => {
-      const added = await store.addSuggestions(suggestions, { tool: sourceTool() });
+      const added = await store.addSuggestions(
+        suggestions.map((entry) => ({ ...entry, tags: withProject(entry.tags) })),
+        { tool: sourceTool() },
+      );
       const duplicates = suggestions.length - added.length;
       const parts = [`${added.length} suggestion(s) queued for the user's approval.`];
       if (duplicates > 0) parts.push(`${duplicates} skipped (already saved or already pending).`);

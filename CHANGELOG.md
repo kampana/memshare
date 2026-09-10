@@ -108,3 +108,25 @@ adapter exists (that is v0.3), and export/import is the wrong mechanism
 between your own tools regardless — every MCP client reads the same store, so
 switching tools needs no migration at all. Bundles move memory between
 *people*, not between one person's tools.
+
+## 0.2.5
+
+**Tags name themselves.** Tag choice was left entirely to the model, which is a
+silent failure mode: tags are the whole sharing mechanism, so if one session
+says `project-x` and the next says `projectx`, `export --tags project-x`
+returns nothing and never says why. Between two people it never lines up at all.
+
+The project tag is now derived from the git checkout the assistant is working
+in, so every tool, session and teammate on that repo agrees. Guarded against
+tagging everything with a home directory or an uninformative folder name
+(`src`, `work`, `tmp`). Disable with `autoProjectTag=false`.
+
+The `tags` parameter now tells the model to supply subject-matter tags only,
+leave the project name alone, and reuse existing tags via `memory_list_tags`.
+
+**New: `memshare tags --rename <from> --to <to>`** to merge near-duplicates
+that slip through.
+
+**Roadmap correction.** v0.3 said "adapters for Claude, ChatGPT, Cursor,
+Copilot". Three of those need no adapter — they speak MCP and work today.
+v0.3 is now the ChatGPT route and a system-prompt inject for API-only models.

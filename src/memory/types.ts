@@ -80,6 +80,8 @@ export const Config = z.object({
   mode: Mode.default("auto"),
   defaultVisibility: Visibility.default("private"),
   autoRedactPII: z.boolean().default(true),
+  /** Tag captured memories with the current git repo / folder name. */
+  autoProjectTag: z.boolean().default(true),
   /** Informational: the live location always comes from resolveMemoryDir(). */
   memoryDir: z.string().default("~/.memshare"),
 });
@@ -90,6 +92,7 @@ export const DEFAULT_CONFIG: Config = {
   mode: "auto",
   defaultVisibility: "private",
   autoRedactPII: true,
+  autoProjectTag: true,
   memoryDir: "~/.memshare",
 };
 

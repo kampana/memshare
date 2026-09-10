@@ -46,6 +46,16 @@ The commands exist for the decisions you should not delegate to a model: **what 
 memshare mark --tags project-x --shareable
 ```
 
+### Tags name themselves
+
+You never have to say "tag this project-x". The project tag is derived from the git checkout the assistant is working in, so every tool, every session and every teammate on that repo agrees on it — and the model is told to add only subject-matter tags (`auth`, `deploy`) on top. Turn it off with `memshare config --set autoProjectTag=false`.
+
+If near-duplicates creep in anyway, merge them:
+
+```bash
+memshare tags --rename projectx --to project-x
+```
+
 You can also add memories by hand at any time:
 
 ```bash
@@ -157,13 +167,13 @@ The server exposes four tools to any MCP client:
 |---|---|
 | `memshare init` | Create the store. `--name`, `--mode`, `--yes` |
 | `memshare add <text>` | Add a memory. `--tags`, `--visibility`, `--expires`, `--tool` |
-| `memshare mark [ids...]` | Promote memories to shareable, or pull them back. `--tags`, `--query`, `--shareable`, `--private` |
 | `memshare list` | Show the store. `--tags`, `--visibility`, `--query`, `--from`, `--limit`, `--json`, `--all` |
 
 `--from` matches the MCP client that wrote the memory — the name it gives in the handshake, such as `claude-code` or `cursor-vscode`. Memories added by hand are `cli`.
 
 | `memshare recall` | Print memories as plain text, to paste into any AI tool |
-| `memshare tags` | List all tags |
+| `memshare tags` | List all tags. `--rename <from> --to <to>` merges near-duplicates |
+| `memshare mark [ids...]` | Promote memories to shareable, or pull them back. `--tags`, `--query`, `--shareable`, `--private` |
 | `memshare review` | Approve or reject pending suggestions. `--yes`, `--clear` |
 | `memshare export` | Write a bundle. `--tags`, `--for`, `--expires`, `--note`, `--out`, `--preview`, `--redact-blocked`, `--include-private`, `--no-scan` |
 | `memshare preview <file>` | Inspect a bundle, import nothing |
@@ -192,7 +202,7 @@ The same code, four ways to run it — pick one, switch whenever:
 ## Roadmap
 
 - **v0.2 — shipped:** CLI, MCP server, export/import bundles, PII guard, consent flow
-- **v0.3:** adapters for ChatGPT, Cursor, Copilot
+- **v0.3:** a ChatGPT route, and a system-prompt inject for API-only models (Gemini, Ollama). Claude Code, Cursor, Copilot and Windsurf already work — they speak MCP, so they need no adapter.
 - **v0.4:** Docker deploy, remote MCP server
 - **v0.5:** discovery and live sync
 - **v1.0:** when the bundle format freezes and `SCHEMA_VERSION` goes to 1.0.0
