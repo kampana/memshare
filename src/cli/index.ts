@@ -37,7 +37,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.2.5";
+const VERSION = "0.2.6";
 
 const program = new Command();
 
@@ -125,7 +125,7 @@ program
     console.log(info(`PII guard:    ${config.autoRedactPII ? "on" : "off"}`));
     console.log();
     console.log(heading("Next:"));
-    console.log(`  claude mcp add memshare -- npx -y memshare-cli serve`);
+    console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
     console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
     console.log();
   });

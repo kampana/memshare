@@ -161,7 +161,7 @@ Interactive: asks for display name and preferred mode.
 
 ### memshare serve
 Starts the MCP server (stdio transport). This is what Claude connects to.
-Usage: `claude mcp add memshare -- npx -y memshare-cli serve`
+Usage: `claude mcp add memshare -- npx -y memshare-mcp serve`
 
 ### memshare list
 Shows all memory items in a table format.
@@ -259,7 +259,7 @@ Expected: shows interactive preview, Bob can accept/reject per item. Accepted it
 
 ### Test 4: MCP server with Claude
 ```bash
-claude mcp add memshare -- npx -y memshare-cli serve
+claude mcp add memshare -- npx -y memshare-mcp serve
 # Then in Claude: "What do you know about me from memory?"
 # Claude should call memory_get and find the stored items
 # Then: "Remember that I like dark mode in all my apps"
@@ -357,13 +357,13 @@ The team-server tier from the pitch deck — `memshare share --with`, `memshare 
 
 ## npm package name
 
-Published as **`memshare-cli`**, not `memshare`. The name `memshare` was published by an unrelated project in 2021 and unpublished that November; npm permanently reserves unpublished names, so the registry refuses it with a 409 for everyone, the original owner included.
+Published as **`memshare-mcp`**, not `memshare`. The name `memshare` was published by an unrelated project in 2021 and unpublished that November; npm permanently reserves unpublished names, so the registry refuses it with a 409 for everyone, the original owner included.
 
 The installed binary is still `memshare` — only the install line differs:
 
 ```
-npm install -g memshare-cli
-claude mcp add memshare -- npx -y memshare-cli serve
+npm install -g memshare-mcp
+claude mcp add memshare -- npx -y memshare-mcp serve
 ```
 
 ## Positioning
@@ -449,3 +449,10 @@ The real v0.3 work is the two cases MCP does not cover:
 
 - **ChatGPT**, which cannot launch a local stdio process. It needs a Custom GPT action against an HTTPS endpoint, or a browser extension — and both sit awkwardly beside "no server, nothing leaves your machine".
 - **API-only models** (Gemini, Ollama, anything without MCP), where the "adapter" is really `memshare recall` piped into a system prompt. That already works; it needs documenting more than building.
+
+
+## Renamed to `memshare-mcp`
+
+Published as `memshare-cli` through 0.2.5, now `memshare-mcp`. `-cli` misdescribed the project to exactly the audience it targets: someone browsing MCP servers reads "CLI tool" and assumes the terminal is the interface, when capture and recall happen entirely in conversation and only the consent steps are commands.
+
+`memshare-cli` is deprecated rather than unpublished. Deprecation warns on install and leaves the name working; unpublishing would burn it permanently, which is the exact trap that made `memshare` unusable in the first place.

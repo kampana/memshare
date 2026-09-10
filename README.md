@@ -2,7 +2,7 @@
 
 **Peer-to-peer AI memory sharing between users — with consent.**
 
-[![npm](https://img.shields.io/npm/v/memshare-cli.svg)](https://www.npmjs.com/package/memshare-cli)
+[![npm](https://img.shields.io/npm/v/memshare-mcp.svg)](https://www.npmjs.com/package/memshare-mcp)
 [![CI](https://github.com/kampana/memshare/actions/workflows/ci.yml/badge.svg)](https://github.com/kampana/memshare/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
@@ -21,14 +21,14 @@ No central server. No cloud. No signup.
 ## 30-second quickstart
 
 ```bash
-npm install -g memshare-cli
+npm install -g memshare-mcp
 memshare init
 
 # Connect it to Claude Code
-claude mcp add memshare -- npx -y memshare-cli serve
+claude mcp add memshare -- npx -y memshare-mcp serve
 
 # Or add it to any MCP client's config:
-#   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-cli", "serve"] } } }
+#   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
 
 ## You mostly talk, not type
@@ -212,7 +212,7 @@ The same code, four ways to run it — pick one, switch whenever:
 ## Use as a library
 
 ```ts
-import { MemoryStore, selectForExport, planImport } from "memshare-cli";
+import { MemoryStore, selectForExport, planImport } from "memshare-mcp";
 
 const store = new MemoryStore();
 await store.add({ content: "Team chose Postgres over MySQL", tags: ["db"] });
@@ -221,9 +221,11 @@ const { included, blocked } = await selectForExport(store, { tags: ["db"] });
 
 Every adapter — the CLI, the MCP server, and any you write — goes through these exports. See [`src/index.ts`](src/index.ts).
 
-## Why is the package called `memshare-cli`?
+## Why is the package called `memshare-mcp`?
 
-Because `memshare` on npm is unusable. An unrelated project published it in February 2021 and unpublished it that November, and npm permanently reserves unpublished names — the registry returns 409 for everyone, the original owner included. The installed command is still `memshare`.
+Two reasons. `memshare` itself is unusable on npm — an unrelated project published it in February 2021 and unpublished it that November, and npm permanently reserves unpublished names, returning 409 for everyone including the original owner. And `-mcp` says what this actually is: an MCP server first, with a CLI for the decisions that should not be delegated to a model.
+
+The installed command is still `memshare`. An earlier release used `memshare-cli`, which is now deprecated and points here.
 
 ## Development
 

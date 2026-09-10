@@ -130,3 +130,21 @@ that slip through.
 **Roadmap correction.** v0.3 said "adapters for Claude, ChatGPT, Cursor,
 Copilot". Three of those need no adapter — they speak MCP and work today.
 v0.3 is now the ChatGPT route and a system-prompt inject for API-only models.
+
+## 0.2.6
+
+**Renamed to `memshare-mcp`.** `-cli` misdescribed the project to the audience
+it targets: someone browsing MCP servers reads "CLI tool" and assumes the
+terminal is the interface, when capture and recall happen in conversation and
+only the consent steps are commands.
+
+`memshare-cli` is deprecated, not unpublished — deprecation warns on install
+and leaves the name working, while unpublishing would burn it permanently.
+That is exactly what made `memshare` unusable in the first place.
+
+The installed command is unchanged: `memshare`.
+
+```
+npm install -g memshare-mcp
+claude mcp add memshare -- npx -y memshare-mcp serve
+```
