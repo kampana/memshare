@@ -44,3 +44,13 @@ hostile recipient.
 Deck: the suggest-mode mockup showed an in-chat approval that does not exist.
 Replaced with the real flow (`memory_suggest` → queue → `memshare review`).
 Removed dead CSS from the audience slide and the stale "MVP" roadmap label.
+
+## 0.2.1
+
+Roadmap correction. The deck marked v0.1 as shipped and listed v0.2 as a
+future stage — while 0.2.0 was already on npm. Shipped is now v0.2 and the
+stages after it are v0.3 (adapters), v0.4 (Docker / remote), v0.5 (discovery
+and live sync), v1.0 when the bundle format freezes.
+
+`check:docs` now enforces this: the deck's "shipped" card must name the
+current minor version, and no later stage may reuse that number.

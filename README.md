@@ -172,10 +172,11 @@ The same code, four ways to run it — pick one, switch whenever:
 
 ## Roadmap
 
-- **v0.1 — now:** CLI, MCP server, export/import bundles, PII guard
-- **v0.2:** adapters for ChatGPT, Cursor, Copilot
-- **v0.3:** Docker deploy, remote MCP server
-- **v0.4:** discovery and live sync
+- **v0.2 — shipped:** CLI, MCP server, export/import bundles, PII guard, consent flow
+- **v0.3:** adapters for ChatGPT, Cursor, Copilot
+- **v0.4:** Docker deploy, remote MCP server
+- **v0.5:** discovery and live sync
+- **v1.0:** when the bundle format freezes and `SCHEMA_VERSION` goes to 1.0.0
 
 ## Use as a library
 
