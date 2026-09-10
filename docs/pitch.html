@@ -525,8 +525,65 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
   </div>
 </div>
 
-<!-- SLIDE 9 — USE CASES: BETWEEN PEOPLE -->
+<!-- SLIDE 9 — A TEAM, STEP BY STEP -->
 <div class="slide" data-slide="9">
+  <div class="tag">In Practice</div>
+  <h2>A team, <span class="accent">two weeks</span>, no documentation written</h2>
+  <p class="subtitle" style="margin-bottom: 2.5vmin; font-size: 2.2vmin;">Nobody curates a knowledge base. The context accumulates while people work.</p>
+  <div class="three-col" style="gap: 3vmin;">
+
+    <div class="card" style="padding: 3vmin;">
+      <p style="font-size: 1.5vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1.2vmin;">DAY 0 · DANA (TECH LEAD)</p>
+      <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Install, then forget it</h3>
+      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
+        Her AI quietly records what it learns as she works — JWT refresh windows, why Postgres won, the migration script.
+      </p>
+      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
+        <span class="cmd">npm</span> install -g memshare-cli<br>
+        <span class="cmd">memshare</span> init<br>
+        <span class="cmd">memshare</span> config <span class="flag">--set</span> mode=auto
+      </div>
+    </div>
+
+    <div class="card" style="padding: 3vmin;">
+      <p style="font-size: 1.5vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1.2vmin;">DAY 14 · FIVE MINUTES</p>
+      <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Mark what the team needs</h3>
+      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
+        ~40 memories accumulated. She promotes the team-relevant ones. Everything else stays private and <em>cannot</em> leave.
+      </p>
+      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
+        <span class="cmd">memshare</span> list<br>
+        <span class="cmd">memshare</span> add <span class="string">"Migrations run via</span><br>
+        &nbsp;&nbsp;<span class="string">scripts/migrate.ts"</span> \<br>
+        &nbsp;&nbsp;<span class="flag">--visibility</span> shareable
+      </div>
+    </div>
+
+    <div class="card" style="padding: 3vmin; border-color: var(--color-green);">
+      <p style="font-size: 1.5vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1.2vmin;">DAY 15 · SAM JOINS</p>
+      <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Productive on the first prompt</h3>
+      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
+        Sam previews, accepts item by item, and asks <em>"how do migrations work here?"</em> — and gets the real answer.
+      </p>
+      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
+        <span class="comment"># Dana sends one file</span><br>
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> \<br>
+        &nbsp;&nbsp;<span class="flag">--for</span> <span class="string">"sam"</span> <span class="flag">--expires</span> <span class="string">"30d"</span><br>
+        <br>
+        <span class="comment"># Sam, on his own laptop</span><br>
+        <span class="cmd">memshare</span> preview bundle-a3f8...<br>
+        <span class="cmd">memshare</span> import bundle-a3f8...
+      </div>
+    </div>
+
+  </div>
+  <p style="font-size: 1.8vmin; color: var(--color-text-muted); text-align: center; margin-top: 3vmin;">
+    Nobody wrote a wiki page. Sam never had to ask. <span class="green">The alternative isn't documentation — it's explaining the same thing for the tenth time.</span>
+  </p>
+</div>
+
+<!-- SLIDE 10 — USE CASES: BETWEEN PEOPLE -->
+<div class="slide" data-slide="10">
   <div class="tag">Use Cases</div>
   <h2>Sharing <span class="accent">between people</span></h2>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; margin-top: 3vmin;">
@@ -573,8 +630,8 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
   </div>
 </div>
 
-<!-- SLIDE 10 — USE CASES: BETWEEN MODELS -->
-<div class="slide" data-slide="10">
+<!-- SLIDE 11 — USE CASES: BETWEEN MODELS -->
+<div class="slide" data-slide="11">
   <div class="tag">Use Cases</div>
   <h2>Sharing <span class="green">between models and sessions</span></h2>
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3vmin; margin-top: 3vmin;">
@@ -625,8 +682,8 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
   </div>
 </div>
 
-<!-- SLIDE 11 — DEPLOYMENT EVOLUTION -->
-<div class="slide" data-slide="11">
+<!-- SLIDE 12 — DEPLOYMENT EVOLUTION -->
+<div class="slide" data-slide="12">
   <div class="tag">Deployment</div>
   <h2>Same code. <span class="accent">Your choice</span> where it runs.</h2>
   <p class="subtitle" style="margin-bottom: 2.5vmin;">Four ways to run it. Same protocol, same files, no code changes between them — pick the one that fits, switch whenever.</p>
@@ -690,8 +747,8 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
   </div>
 </div>
 
-<!-- SLIDE 12 — CTA / OPEN SOURCE -->
-<div class="slide" data-slide="12">
+<!-- SLIDE 13 — CTA / OPEN SOURCE -->
+<div class="slide" data-slide="13">
   <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
     <div class="cta-box" style="max-width: 75vmin;">
       <div class="tag" style="margin-bottom: 3vmin;">Open Source · MIT License</div>
@@ -728,7 +785,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 <!-- NAVIGATION -->
 <div class="nav">
   <button class="nav-btn" id="prev" aria-label="Previous">◀</button>
-  <span class="nav-counter" id="counter">1 / 12</span>
+  <span class="nav-counter" id="counter">1 / 13</span>
   <button class="nav-btn" id="next" aria-label="Next">▶</button>
 </div>
 
