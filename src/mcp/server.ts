@@ -14,7 +14,9 @@ import { Visibility, type Mode } from "../memory/types.js";
  */
 
 const MODE_NOTES: Record<Mode, string> = {
-  auto: "Store mode is AUTO: save memories with memory_set as soon as they are worth keeping.",
+  auto:
+    "Store mode is AUTO: call memory_set yourself, as soon as a durable fact appears. " +
+    "Do not wait to be asked, and do not batch it to the end of the conversation.",
   suggest:
     "Store mode is SUGGEST (the default): propose memories with memory_suggest instead of saving them. " +
     "The user reviews them later with `memshare review`. If you call memory_set anyway, it is queued as a suggestion, not saved.",
@@ -27,15 +29,17 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   const modeNote = MODE_NOTES[config.mode];
 
   const server = new McpServer(
-    { name: "memshare", version: "0.2.2" },
+    { name: "memshare", version: "0.2.3" },
     {
       instructions:
-        "memshare gives you a local, user-owned memory store shared across AI tools. " +
-        "Call memory_get near the start of a conversation to recall what you already know about this user " +
-        "and their projects. " +
+        "memshare is this user's own memory store, shared across every AI tool they use. " +
+        "Treat it as your long-term memory of them.\n\n" +
+        "At the start of a conversation, call memory_get to recall what you already know about " +
+        "this user and their work, and call it again when the topic shifts. " +
+        "Reuse existing tags rather than inventing near-duplicates -- memory_list_tags shows them.\n\n" +
         modeNote +
-        " Never store secrets, credentials, health details or financial details -- memshare blocks them from " +
-        "sharing, but they should not be written down in the first place.",
+        "\n\nNever store secrets, credentials, health details or financial details. memshare blocks " +
+        "them from being shared, but they should not be written down in the first place.",
     },
   );
 
@@ -44,9 +48,18 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
     {
       title: "Save a memory",
       description:
-        "Save one durable fact about the user, their projects, or their preferences. " +
-        "Use it for things that stay true after this conversation ends, not for transient details. " +
-        "One fact per call, written as a standalone sentence that makes sense without context. " +
+        "Save one durable fact about the user, their projects, or their preferences -- something " +
+        "that will still be true and useful in a conversation a month from now.\n\n" +
+        "Moments that usually justify a call: the user states a preference or a team convention; " +
+        "a decision is made and a reason is given; you learn something non-obvious about their " +
+        "codebase, domain or process; the user corrects an assumption you were working from.\n\n" +
+        "Worth saving: \"The team chose Postgres over MySQL for its JSONB support.\" " +
+        "\"Migrations run through scripts/migrate.ts, never by hand.\" " +
+        "\"Prefers TypeScript with strict mode over plain JavaScript.\"\n" +
+        "Not worth saving: anything already visible in the current file or diff, transient task " +
+        "state, or secrets, credentials, health details and financial details.\n\n" +
+        "One fact per call, written as a standalone sentence that makes sense with no other " +
+        "context. " +
         modeNote,
       inputSchema: {
         content: z

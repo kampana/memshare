@@ -74,3 +74,23 @@ your machine should not be delegated to a model.
 
 Deck and README now lead with what you *say* rather than what you type, since
 most users will never run a command beyond the consent steps.
+
+## 0.2.3
+
+Rewrote the MCP tool descriptions and server instructions so the model
+actually does what the deck claims.
+
+`memory_set` previously said only "save memories as soon as they are worth
+keeping" — abstract, with no trigger moments and no examples, while the
+"not for transient details" clause pushed models toward saving nothing. It
+now names the moments that justify a call (a stated preference or convention,
+a decision with its reason, a non-obvious fact about the codebase, a
+correction to an assumption) and gives concrete save / do-not-save examples.
+
+Auto mode now says explicitly: call it yourself, do not wait to be asked, do
+not batch to the end of the conversation. The server instructions ask for a
+`memory_get` at the start and on topic shifts, and for tag reuse via
+`memory_list_tags`.
+
+No API or storage change — capture rate is the whole product, and it depends
+entirely on the model choosing to call the tool.
