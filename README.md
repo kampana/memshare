@@ -29,9 +29,24 @@ claude mcp add memshare -- npx -y memshare-cli serve
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-cli", "serve"] } } }
 ```
 
-Then talk to your AI normally. Ask it *"what do you know about me?"* and it will call `memory_get`. Tell it *"remember that I like dark mode"* and it will call `memory_set`.
+## You mostly talk, not type
 
-Add memories yourself at any time:
+After setup, capture and recall happen in conversation — there is no command to run:
+
+> *"we went with Postgres — the JSONB support decided it"* → the AI calls `memory_set`, saved as `private`
+>
+> *"what do you know about this project?"* → the AI calls `memory_get`
+>
+> *"remember that I like dark mode"* → the AI calls `memory_set`
+
+The commands exist for the decisions you should not delegate to a model: **what becomes shareable, what gets exported, and what you accept from someone else.** That is the point, not an unfinished UI.
+
+```bash
+# The AI captures everything as private. Promote what the team should have:
+memshare mark --tags project-x --shareable
+```
+
+You can also add memories by hand at any time:
 
 ```bash
 memshare add "Auth service uses JWT with 15min refresh" --tags project-x,auth --visibility shareable
@@ -142,6 +157,7 @@ The server exposes four tools to any MCP client:
 |---|---|
 | `memshare init` | Create the store. `--name`, `--mode`, `--yes` |
 | `memshare add <text>` | Add a memory. `--tags`, `--visibility`, `--expires`, `--tool` |
+| `memshare mark [ids...]` | Promote memories to shareable, or pull them back. `--tags`, `--query`, `--shareable`, `--private` |
 | `memshare list` | Show the store. `--tags`, `--visibility`, `--query`, `--from`, `--limit`, `--json`, `--all` |
 | `memshare recall` | Print memories as plain text, to paste into any AI tool |
 | `memshare tags` | List all tags |

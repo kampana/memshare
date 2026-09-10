@@ -521,56 +521,59 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 <div class="slide" data-slide="9">
   <div class="tag">In Practice</div>
   <h2>A team, <span class="accent">two weeks</span>, no documentation written</h2>
-  <p class="subtitle" style="margin-bottom: 2.5vmin; font-size: 2.2vmin;">Nobody curates a knowledge base. The context accumulates while people work.</p>
+  <p class="subtitle" style="margin-bottom: 2.5vmin; font-size: 2.2vmin;">Almost none of this is typed at a terminal. You talk to your AI; the context accumulates on its own.</p>
   <div class="three-col" style="gap: 3vmin;">
 
     <div class="card" style="padding: 3vmin;">
       <p style="font-size: 1.5vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1.2vmin;">DAY 0 · DANA (TECH LEAD)</p>
       <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Install, then forget it</h3>
-      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
-        Her AI quietly records what it learns as she works — JWT refresh windows, why Postgres won, the migration script.
+      <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
+        Install once. After that she never types a memshare command — she just works, and her AI records what it learns.
       </p>
-      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
-        <span class="cmd">npm</span> install -g memshare-cli<br>
-        <span class="cmd">memshare</span> init<br>
-        <span class="cmd">memshare</span> config <span class="flag">--set</span> mode=auto
+      <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
+        <span class="comment"># she just says, mid-conversation:</span><br>
+        <span class="string">"we went with Postgres —<br>
+        &nbsp;the JSONB support decided it"</span><br>
+        <span class="comment">→ Claude calls memory_set()</span><br>
+        <span class="comment">→ saved, and private</span>
       </div>
     </div>
 
     <div class="card" style="padding: 3vmin;">
       <p style="font-size: 1.5vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1.2vmin;">DAY 14 · FIVE MINUTES</p>
       <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Mark what the team needs</h3>
-      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
-        ~40 memories accumulated. She promotes the team-relevant ones. Everything else stays private and <em>cannot</em> leave.
+      <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
+        ~40 memories accumulated. Ask the AI what it knows, then make the consent call yourself. That one <em>is</em> a command, on purpose.
       </p>
-      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
-        <span class="cmd">memshare</span> list<br>
-        <span class="cmd">memshare</span> add <span class="string">"Migrations run via</span><br>
-        &nbsp;&nbsp;<span class="string">scripts/migrate.ts"</span> \<br>
-        &nbsp;&nbsp;<span class="flag">--visibility</span> shareable
+      <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
+        <span class="string">"what have you learned<br>
+        &nbsp;about project-x?"</span><br>
+        <span class="comment">→ Claude calls memory_get()</span><br>
+        <br>
+        <span class="comment"># the consent call is yours:</span><br>
+        <span class="cmd">memshare</span> mark <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--shareable</span>
       </div>
     </div>
 
     <div class="card" style="padding: 3vmin; border-color: var(--color-green);">
       <p style="font-size: 1.5vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1.2vmin;">DAY 15 · SAM JOINS</p>
       <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Productive on the first prompt</h3>
-      <p style="font-size: 1.55vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.5vmin;">
-        Sam previews, accepts item by item, and asks <em>"how do migrations work here?"</em> — and gets the real answer.
+      <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
+        Sam accepts item by item. Then he is back to plain conversation — and his AI already knows the codebase.
       </p>
-      <div class="code-block" style="font-size: 1.2vmin; padding: 1.5vmin 1.8vmin; line-height: 1.6;">
-        <span class="comment"># Dana sends one file</span><br>
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> \<br>
-        &nbsp;&nbsp;<span class="flag">--for</span> <span class="string">"sam"</span> <span class="flag">--expires</span> <span class="string">"30d"</span><br>
+      <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
+        <span class="comment"># Dana sends one file, Sam runs:</span><br>
+        <span class="cmd">memshare</span> import bundle-a3f8...<br>
         <br>
-        <span class="comment"># Sam, on his own laptop</span><br>
-        <span class="cmd">memshare</span> preview bundle-a3f8...<br>
-        <span class="cmd">memshare</span> import bundle-a3f8...
+        <span class="comment"># then, on day one:</span><br>
+        <span class="string">"how do migrations work here?"</span><br>
+        <span class="comment">→ the real answer. no onboarding.</span>
       </div>
     </div>
 
   </div>
   <p style="font-size: 1.8vmin; color: var(--color-text-muted); text-align: center; margin-top: 3vmin;">
-    Nobody wrote a wiki page. Sam never had to ask. <span class="green">The alternative isn't documentation — it's explaining the same thing for the tenth time.</span>
+    Two commands in two weeks. <span class="green">Everything else was just talking. The one step that stays a command is the moment you decide what leaves your machine.</span>
   </p>
 </div>
 

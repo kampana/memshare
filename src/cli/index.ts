@@ -36,7 +36,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.2.1";
+const VERSION = "0.2.2";
 
 const program = new Command();
 
@@ -287,6 +287,96 @@ program
     console.log(tags.length === 0 ? info("No tags yet.") : tags.join("\n"));
   });
 
+// ---------------------------------------------------------------- mark
+
+program
+  .command("mark")
+  .argument("[ids...]", "memory ids (full or the short form shown by `list`)")
+  .description("promote memories to shareable, or pull them back to private")
+  .option("-t, --tags <tags>", "mark everything carrying any of these tags", collect, [] as string[])
+  .option("-q, --query <text>", "mark everything matching this text")
+  .option("--shareable", "allow these memories to be included in an export")
+  .option("--private", "never export these memories (the default state)")
+  .option("-y, --yes", "skip the confirmation prompt")
+  .action(
+    async (
+      ids: string[],
+      opts: {
+        tags: string[];
+        query?: string;
+        shareable?: boolean;
+        private?: boolean;
+        yes?: boolean;
+      },
+    ) => {
+      const s = await requireStore();
+
+      if (opts.shareable === opts.private) {
+        throw new UserError("Choose one: --shareable or --private.");
+      }
+      const visibility: MemoryItem["visibility"] = opts.shareable ? "shareable" : "private";
+
+      const tags = parseTagList(opts.tags);
+      if (ids.length === 0 && tags.length === 0 && !opts.query) {
+        throw new UserError(
+          "Nothing selected. Give ids, or narrow with --tags / --query.\n" +
+            `  e.g. ${c.bold("memshare mark --tags project-x --shareable")}`,
+        );
+      }
+
+      const all = await s.all();
+      const selected =
+        ids.length > 0
+          ? ids
+              .map((given) => all.find((i) => i.id === given || shortId(i.id) === given))
+              .filter((i): i is MemoryItem => i !== undefined)
+          : await s.list({
+              ...(tags.length > 0 ? { tags } : {}),
+              ...(opts.query ? { query: opts.query } : {}),
+            });
+
+      const changing = selected.filter((i) => i.visibility !== visibility);
+      if (selected.length === 0) {
+        console.log(info("Nothing matched."));
+        process.exitCode = 1;
+        return;
+      }
+      if (changing.length === 0) {
+        console.log(info(`All ${selected.length} matching item(s) are already ${visibility}.`));
+        return;
+      }
+
+      console.log();
+      console.log(heading(`Marking ${changing.length} item(s) as ${c.bold(visibility)}:`));
+      for (const item of changing) {
+        console.log(`  ${c.dim(shortId(item.id))}  ${truncate(item.content, 66)}`);
+      }
+      console.log();
+
+      // Making things shareable is the consent decision. Confirm it.
+      if (visibility === "shareable" && !opts.yes && isInteractive()) {
+        const go = await confirm({
+          message: `Allow these ${changing.length} item(s) to be included in exports?`,
+          default: true,
+        });
+        if (!go) {
+          console.log(info("Cancelled. Nothing changed."));
+          return;
+        }
+      }
+
+      for (const item of changing) await s.update(item.id, { visibility });
+      console.log(ok(`${changing.length} item(s) are now ${visibility}.`));
+      if (visibility === "shareable") {
+        console.log(
+          info(
+            `They are still on your machine only. Sharing takes an explicit ${c.bold("memshare export")}.`,
+          ),
+        );
+      }
+    },
+  );
+
 // ---------------------------------------------------------------- forget
 
 program
@@ -482,7 +572,8 @@ program
           fail(
             "Nothing to export. Only items marked " +
               c.bold("shareable") +
-              " are eligible -- set one with `memshare add ... --visibility shareable`.",
+              " are eligible.\n  Promote what the AI has already captured with: " +
+              c.bold("memshare mark --tags <tags> --shareable"),
           ),
         );
         process.exitCode = 1;

@@ -54,3 +54,23 @@ and live sync), v1.0 when the bundle format freezes.
 
 `check:docs` now enforces this: the deck's "shipped" card must name the
 current minor version, and no later stage may reuse that number.
+
+## 0.2.2
+
+**New: `memshare mark`.** `MemoryStore.update()` existed but no command exposed
+it, so an item's visibility could never change after creation. Since `auto`
+capture always writes `private`, the entire sharing flow was unreachable —
+the only shareable items were ones typed by hand. The core promise of the
+tool did not work.
+
+```
+memshare mark --tags project-x --shareable
+```
+
+Select by ids, `--tags` or `--query`. Promoting asks for confirmation when
+interactive; pulling back to `private` does not. Deliberately not an MCP
+tool — capture and recall belong in conversation, but deciding what may leave
+your machine should not be delegated to a model.
+
+Deck and README now lead with what you *say* rather than what you type, since
+most users will never run a command beyond the consent steps.

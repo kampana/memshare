@@ -400,3 +400,16 @@ The reasoning for the change: there are two consent gates, and they are not equa
 Unparseable dates are ignored rather than treated as "expires now", so a malformed timestamp cannot silently destroy a memory on arrival.
 
 **Known limitation:** `contentHash` covers the `items` array only, not `metadata`. A recipient can edit `metadata.expiresAt` without breaking integrity validation. Expiry is therefore cooperative — it protects against stale context, not against a hostile recipient. Covering metadata in the hash would make tampering detectable and is a candidate for the next `SCHEMA_VERSION` bump, since it changes how every bundle hashes.
+
+## `memshare mark` — closing a hole in the core flow
+
+`MemoryStore.update()` existed from the start but no command exposed it, so an item's visibility could never change after creation. Combined with `auto` capture — which always writes `private` — that made the entire sharing flow unreachable: the only shareable items were ones typed by hand with `memshare add --visibility shareable`.
+
+```
+memshare mark --tags project-x --shareable
+memshare mark <id> --private
+```
+
+Selection is by ids, `--tags`, or `--query`. Promoting to `shareable` asks for confirmation when interactive, because that is the consent decision; pulling back to `private` does not.
+
+**Deliberately not an MCP tool.** Capture and recall belong in conversation, but deciding what may leave the machine should not be delegated to a model — the same reasoning that keeps export and import out of the tool list.
