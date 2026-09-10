@@ -94,3 +94,17 @@ not batch to the end of the conversation. The server instructions ask for a
 
 No API or storage change — capture rate is the whole product, and it depends
 entirely on the model choosing to call the tool.
+
+## 0.2.4
+
+**`source.tool` now records the client that actually wrote the memory.** It was
+hardcoded to `"mcp"`, so `--from claude` and `--from cursor` matched nothing,
+always — the client names itself in the initialize handshake and we were
+throwing it away. Now `claude-code`, `cursor-vscode`, and so on.
+
+**Corrected the "switching from ChatGPT to Claude" slide.** It showed
+`export --from chatgpt` then `import`, which was wrong twice: no ChatGPT
+adapter exists (that is v0.3), and export/import is the wrong mechanism
+between your own tools regardless — every MCP client reads the same store, so
+switching tools needs no migration at all. Bundles move memory between
+*people*, not between one person's tools.

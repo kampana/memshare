@@ -159,6 +159,9 @@ The server exposes four tools to any MCP client:
 | `memshare add <text>` | Add a memory. `--tags`, `--visibility`, `--expires`, `--tool` |
 | `memshare mark [ids...]` | Promote memories to shareable, or pull them back. `--tags`, `--query`, `--shareable`, `--private` |
 | `memshare list` | Show the store. `--tags`, `--visibility`, `--query`, `--from`, `--limit`, `--json`, `--all` |
+
+`--from` matches the MCP client that wrote the memory — the name it gives in the handshake, such as `claude-code` or `cursor-vscode`. Memories added by hand are `cli`.
+
 | `memshare recall` | Print memories as plain text, to paste into any AI tool |
 | `memshare tags` | List all tags |
 | `memshare review` | Approve or reject pending suggestions. `--yes`, `--clear` |

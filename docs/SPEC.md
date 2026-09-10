@@ -413,3 +413,18 @@ memshare mark <id> --private
 Selection is by ids, `--tags`, or `--query`. Promoting to `shareable` asks for confirmation when interactive, because that is the consent decision; pulling back to `private` does not.
 
 **Deliberately not an MCP tool.** Capture and recall belong in conversation, but deciding what may leave the machine should not be delegated to a model — the same reasoning that keeps export and import out of the tool list.
+
+## `source.tool` records the real client
+
+The MCP server previously wrote `source.tool: "mcp"` for every memory, which made `--from` useless: `--from claude` and `--from cursor` matched nothing, always. The client names itself in the `initialize` handshake and the value was being discarded.
+
+It is now taken from `getClientVersion()?.name`, lowercased — `claude-code`, `cursor-vscode`, and so on — falling back to `mcp` when a client sends nothing. Memories added through the CLI stay `cli`; imported ones keep the sender's original value.
+
+### On "switching from ChatGPT to Claude"
+
+The pitch previously showed this as `export --from chatgpt` then `import`. That was wrong twice over:
+
+1. **There is no ChatGPT adapter**, so nothing ever writes with that source. It is v0.3 work.
+2. **Export/import is the wrong mechanism between your own tools anyway.** Every MCP client on your machine reads the *same* store. Switching from Cursor to Claude Code requires no migration at all — the memories are already there. Bundles are for moving memory between *people*, not between one person's tools.
+
+The deck now says that instead.

@@ -28,8 +28,19 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   const config = await store.readConfig();
   const modeNote = MODE_NOTES[config.mode];
 
+  /**
+   * Which tool is actually writing. The client names itself in the initialize
+   * handshake ("claude-code", "cursor-vscode", ...), and recording it is what
+   * makes `memshare list --from cursor` mean anything. Only available after
+   * the handshake, so it is read per call rather than captured up front.
+   */
+  const sourceTool = (): string => {
+    const name = server.server.getClientVersion()?.name?.trim().toLowerCase();
+    return name && name !== "" ? name : "mcp";
+  };
+
   const server = new McpServer(
-    { name: "memshare", version: "0.2.3" },
+    { name: "memshare", version: "0.2.4" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -80,7 +91,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       // In suggest mode a direct write would bypass the user's consent, so it
       // becomes a suggestion instead of an error.
       if (config.mode === "suggest") {
-        const [queued] = await store.addSuggestions([{ content, tags }], { tool: "mcp" });
+        const [queued] = await store.addSuggestions([{ content, tags }], { tool: sourceTool() });
         return text(
           queued
             ? `Queued for the user's approval (suggest mode). It is not saved yet; the user reviews it with \`memshare review\`. id: ${queued.id}`
@@ -93,7 +104,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         tags,
         ...(visibility ? { visibility } : {}),
         confidence: "stated",
-        source: { tool: "mcp" },
+        source: { tool: sourceTool() },
       });
       return text(`Saved. id: ${item.id}, visibility: ${item.visibility}`);
     },
@@ -154,7 +165,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       annotations: { readOnlyHint: false, destructiveHint: false },
     },
     async ({ suggestions }) => {
-      const added = await store.addSuggestions(suggestions, { tool: "mcp" });
+      const added = await store.addSuggestions(suggestions, { tool: sourceTool() });
       const duplicates = suggestions.length - added.length;
       const parts = [`${added.length} suggestion(s) queued for the user's approval.`];
       if (duplicates > 0) parts.push(`${duplicates} skipped (already saved or already pending).`);

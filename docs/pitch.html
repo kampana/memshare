@@ -633,12 +633,13 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
       <div style="display: flex; align-items: center; gap: 1.5vmin;">
         <span style="font-size: 3.5vmin;">🔀</span>
-        <h3 style="font-size: 2.3vmin;">Switching from ChatGPT to Claude</h3>
+        <h3 style="font-size: 2.3vmin;">Switching tools mid-project</h3>
       </div>
-      <p class="body-text">Spent months with ChatGPT and want to try Claude. Instead of starting over — export from ChatGPT, import to Claude. All preferences, style, and context carry over.</p>
+      <p class="body-text">Claude Code today, Cursor tomorrow, Windsurf next month. There is nothing to migrate — every MCP client reads the same local store. Same context, zero commands. <span style="color: var(--color-text-muted);">(A ChatGPT adapter is v0.3.)</span></p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
-        <span class="cmd">memshare</span> export <span class="flag">--from</span> <span class="string">"chatgpt"</span><br>
-        <span class="cmd">memshare</span> import <span class="string">bundle-a3f8.memshare.json</span>
+        <span class="comment"># nothing to run. it is already there.</span><br>
+        <span class="cmd">memshare</span> list <span class="flag">--from</span> <span class="string">"cursor-vscode"</span><br>
+        <span class="comment"># → what Cursor taught it, in Claude</span>
       </div>
     </div>
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
