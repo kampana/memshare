@@ -36,7 +36,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.1.0";
+const VERSION = "0.1.1";
 
 const program = new Command();
 
@@ -206,6 +206,7 @@ program
 
       if (items.length === 0) {
         console.log(info("No memories matched."));
+        await printPendingHint(s);
         return;
       }
 
@@ -226,8 +227,25 @@ program
       console.log();
       const shareable = items.filter((i) => i.visibility === "shareable").length;
       console.log(info(`${items.length} item(s), ${shareable} shareable.`));
+      await printPendingHint(s);
     },
   );
+
+/**
+ * In suggest mode nothing the AI proposes reaches the store until the user
+ * reviews it. A user who never discovers `review` ends up with an empty store
+ * and no idea why, so say it wherever they are already looking.
+ */
+async function printPendingHint(s: MemoryStore): Promise<void> {
+  const pending = await s.readSuggestions();
+  if (pending.length === 0) return;
+  console.log(
+    warn(
+      `${pending.length} suggestion(s) waiting for you — nothing is saved until you run ` +
+        `${c.bold("memshare review")}.`,
+    ),
+  );
+}
 
 // ---------------------------------------------------------------- recall
 

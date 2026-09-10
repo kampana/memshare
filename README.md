@@ -6,9 +6,11 @@
 [![CI](https://github.com/kampana/memshare/actions/workflows/ci.yml/badge.svg)](https://github.com/kampana/memshare/actions/workflows/ci.yml)
 [![license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Every AI memory tool today is per-user by design. You can carry *your* memory between *your* tools — but there is no way to hand a colleague the context you have built up. memshare is the first tool that does, with a preview and an approval step on both sides.
+Every AI memory tool today treats memory as a feature of a chat product. memshare treats it as a data type: plain JSON files you own.
 
-No central server. No cloud. No signup. Your memories are plain JSON files on your own machine.
+Once memory is a file, three things follow, in this order. You can **inspect** it — greppable, diffable, and actually gone when you delete it. You can **move** it — one store, every MCP client, every machine you own. And only then can you **share** it — selectively, item by item, with approval on both sides. That last one no other tool does at all; they are all per-account by design.
+
+No central server. No cloud. No signup.
 
 📊 **[See the pitch deck](https://kampana.github.io/memshare/pitch.html)** · 📄 **[Full spec](docs/SPEC.md)**
 

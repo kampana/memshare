@@ -365,3 +365,11 @@ The installed binary is still `memshare` — only the install line differs:
 npm install -g memshare-cli
 claude mcp add memshare -- npx -y memshare-cli serve
 ```
+
+## Positioning
+
+The deck and README lead with **memory as a data type**, not with sharing.
+
+Sharing is the differentiator, but it is not what a new user can evaluate on day one: their store is empty, so there is nothing to share. What they can evaluate immediately is that their memory is inspectable, portable across tools, and genuinely theirs. Sharing is presented as what becomes possible *once memory is a file* — the third step, not the headline.
+
+This matters for the default mode too. `suggest` is the safest consent posture, but it means nothing reaches the store until the user runs `memshare review`. A user who never discovers that command has an empty store after a month and no reason to stay. Anything that makes the pending queue visible is worth more than it costs.
