@@ -32,3 +32,15 @@ describe("assistant instructions", () => {
     expect(ASSISTANT_INSTRUCTIONS.endsWith("\n")).toBe(true);
   });
 });
+
+describe("visibility of what it is doing", () => {
+  it("asks the assistant to report saves, so a silent failure is not silent", () => {
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/tell me when you save/i);
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/noted:/i);
+  });
+
+  it("asks for an end-of-session sweep, to catch what was passed over", () => {
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/sweep before we finish/i);
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/wrapping up/i);
+  });
+});

@@ -71,6 +71,27 @@ memshare list
 memshare list --tags project-x
 ```
 
+## Is it actually capturing?
+
+The honest risk with this tool is a silent one: nothing in MCP can force a model to call a tool, so capture can quietly not happen and you would not find out for weeks. Two things make that visible.
+
+The assistant is asked to say so in one line each time it saves — *"noted: the team chose Postgres for JSONB"* — so you see it working, and can correct a bad one on the spot instead of a month later. And:
+
+```bash
+memshare stats
+```
+
+```
+12 memories, 5 in the last 14 days
+
+  ▂▁▄█▂ ▁▃    14d ago → today
+
+- 9 captured by an assistant, 3 added by hand
+- 5 shareable, 7 private
+```
+
+A flat line there means capture is not firing, and you know within days rather than at the end of a month.
+
 ## If nothing is being captured
 
 memshare can offer memory, but nothing in MCP can make a model *use* it. The server asks the assistant to save as it learns — in its handshake and in every tool description — but some clients never pass server instructions to the model at all.
@@ -207,6 +228,7 @@ The server exposes seven tools to any MCP client:
 `--from` matches the MCP client that wrote the memory — the name it gives in the handshake, such as `claude-code` or `cursor-vscode`. Memories added by hand are `cli`.
 
 | `memshare recall` | Print memories as plain text, to paste into any AI tool |
+| `memshare stats` | Is it actually capturing? Counts per day, tool and tag. `--days <n>` |
 | `memshare tags` | List all tags. `--rename <from> --to <to>` merges near-duplicates |
 | `memshare mark [ids...]` | Promote memories to shareable, or pull them back. `--tags`, `--query`, `--shareable`, `--private` |
 | `memshare review` | Approve or reject pending suggestions. `--yes`, `--clear` |

@@ -54,7 +54,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.4.1" },
+    { name: "memshare", version: "0.5.0" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -63,6 +63,10 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         "this user and their work, and call it again when the topic shifts. " +
         "Reuse existing tags rather than inventing near-duplicates -- memory_list_tags shows them.\n\n" +
         modeNote +
+        "\n\nSay so in one short line whenever you save something -- \"noted: the team chose " +
+        "Postgres for JSONB\" -- so the user can see it working and correct a bad one immediately. " +
+        "When a working session is wrapping up, look back over it and save anything durable you " +
+        "passed over at the time." +
         "\n\nNever store secrets, credentials, health details or financial details. memshare blocks " +
         "them from being shared, but they should not be written down in the first place.",
     },

@@ -40,14 +40,14 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.4.1";
+const VERSION = "0.5.0";
 
 const program = new Command();
 
 program
   .name("memshare")
   .description(
-    "Peer-to-peer AI memory sharing between users -- with consent.\n" +
+    "Peer-to-peer AI memory sharing between users -- approved on both sides.\n" +
       "Your memories are plain JSON files on your machine. Nothing is uploaded anywhere.",
   )
   .version(VERSION, "-v, --version")
@@ -408,6 +408,102 @@ program
       }
     },
   );
+
+// ---------------------------------------------------------------- stats
+
+program
+  .command("stats")
+  .description("is it actually capturing? counts per day, tool and tag")
+  .option("-d, --days <n>", "how far back to look", (v) => Number.parseInt(v, 10), 14)
+  .action(async (opts: { days: number }) => {
+    const s = await requireStore();
+    const items = await s.list({ includeExpired: true });
+
+    if (items.length === 0) {
+      console.log();
+      console.log(info("Nothing captured yet."));
+      await printPendingHint(s);
+      console.log(
+        info(
+          `If this stays empty after a few days of real work, run ${c.bold("memshare instructions --append ~/.claude/CLAUDE.md")}.`,
+        ),
+      );
+      console.log();
+      return;
+    }
+
+    const days = Math.max(1, opts.days);
+    const since = Date.now() - days * 86_400_000;
+    const recent = items.filter((i) => Date.parse(i.createdAt) >= since);
+
+    // A sparkline of the last `days` days makes a stalled capture obvious in
+    // a way a total never does.
+    const perDay = new Map<string, number>();
+    for (let d = days - 1; d >= 0; d -= 1) {
+      perDay.set(new Date(Date.now() - d * 86_400_000).toISOString().slice(0, 10), 0);
+    }
+    for (const item of recent) {
+      const day = item.createdAt.slice(0, 10);
+      if (perDay.has(day)) perDay.set(day, (perDay.get(day) ?? 0) + 1);
+    }
+    const counts = [...perDay.values()];
+    const peak = Math.max(1, ...counts);
+    const blocks = " ▁▂▃▄▅▆▇█";
+    const spark = counts
+      .map((n) => blocks[n === 0 ? 0 : Math.max(1, Math.round((n / peak) * 8))])
+      .join("");
+
+    const tally = (key: (i: MemoryItem) => string[]): Array<[string, number]> => {
+      const counts2 = new Map<string, number>();
+      for (const item of items) {
+        for (const k of key(item)) counts2.set(k, (counts2.get(k) ?? 0) + 1);
+      }
+      return [...counts2.entries()].sort((a, b) => b[1] - a[1]);
+    };
+
+    const shareable = items.filter((i) => i.visibility === "shareable").length;
+    const imported = items.filter((i) => i.confidence === "imported").length;
+    const captured = items.filter((i) => i.source.tool !== "cli").length;
+
+    console.log();
+    console.log(heading(`${items.length} memories, ${recent.length} in the last ${days} days`));
+    console.log();
+    console.log(`  ${c.green(spark)}  ${c.dim(`${days}d ago → today`)}`);
+    console.log();
+    console.log(
+      info(
+        `${captured} captured by an assistant, ${items.length - captured - imported} added by hand` +
+          (imported > 0 ? `, ${imported} imported from someone else` : ""),
+      ),
+    );
+    console.log(info(`${shareable} shareable, ${items.length - shareable} private`));
+
+    const tools = tally((i) => [i.source.tool]).slice(0, 5);
+    if (tools.length > 0) {
+      console.log();
+      console.log(heading("Where they came from"));
+      for (const [tool, n] of tools) console.log(`  ${String(n).padStart(4)}  ${tool}`);
+    }
+
+    const tags = tally((i) => i.tags).slice(0, 8);
+    if (tags.length > 0) {
+      console.log();
+      console.log(heading("Most common tags"));
+      for (const [tag, n] of tags) console.log(`  ${String(n).padStart(4)}  ${c.cyan(tag)}`);
+    }
+
+    console.log();
+    if (recent.length === 0) {
+      console.log(
+        warn(
+          `Nothing new in ${days} days. If you have been working, capture is not firing — ` +
+            `try ${c.bold("memshare instructions --append ~/.claude/CLAUDE.md")}.`,
+        ),
+      );
+    }
+    await printPendingHint(s);
+    console.log();
+  });
 
 // ---------------------------------------------------------------- forget
 

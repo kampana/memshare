@@ -230,3 +230,22 @@ is at the sharing boundary: only shareable items are eligible, PII is held
 back, the sender is shown the exact list before a file exists, and the
 recipient takes only what they want. The new wording says who consents and to
 what, and cannot be misread as a promise the tool does not make.
+
+## 0.5.0
+
+Capture was invisible. Nothing in MCP can force a model to call a tool, so it
+could quietly not happen and you would not find out for weeks — the worst
+failure mode this product has. Two changes make it visible instead.
+
+**New: `memshare stats`.** Counts per day as a sparkline, plus how many came
+from an assistant versus by hand, the split between shareable and private, and
+which tools and tags dominate. A flat line means capture is not firing, and
+you know within days. An empty store says so and points at the fix.
+
+**The assistant now reports what it saves**, in one line — "noted: the team
+chose Postgres for JSONB" — so you see it working and can correct a bad one on
+the spot rather than a month later. It is also asked to sweep back over a
+session as it wraps up and save anything durable it passed over in the moment.
+
+Both go through the two channels that reach the model: the MCP server's
+instructions, and `memshare instructions` for clients that drop them.

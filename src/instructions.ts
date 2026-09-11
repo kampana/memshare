@@ -40,4 +40,9 @@ long-term memory of me and my work.
 - **Promoting is mine to ask for.** Only call \`memory_set_visibility\` when
   I actually ask you to. Never decide on your own that something should
   become shareable.
+- **Tell me when you save something.** One short line is enough — "noted:
+  the team chose Postgres for JSONB". I want to see that it is working, and
+  to catch a bad one straight away rather than a month later.
+- **Sweep before we finish.** When a working session is wrapping up, look
+  back over it and save anything durable you did not save at the time.
 `;
