@@ -157,18 +157,26 @@ if (!shippedCard) {
   );
 }
 
-for (const doc of ["docs/pitch.html", "README.md"]) {
+// Any version already released must not be presented as future. An earlier
+// version of this check only fired when a document mentioned the current
+// version *nowhere* as shipped, so a stale "PLANNED · v0.5" sitting beside a
+// correct "v0.5 · shipped" slipped through for two releases.
+const [curMajor, curMinor] = currentMinor.split(".").map(Number);
+
+for (const doc of ["docs/pitch.html", "README.md", "docs/index.html"]) {
   const text = read(doc);
-  // A future stage carrying the shipped number means the roadmap was not
-  // updated after a release.
-  const escaped = currentMinor.replace(".", "\\.");
-  const hits = [...text.matchAll(new RegExp(`v${escaped}\\b(?![^\\n]{0,40}shipped)`, "g"))].length;
-  const shippedMentions = [
-    ...text.matchAll(new RegExp(`v${escaped}[^\\n]{0,40}shipped`, "g")),
-  ].length;
-  if (hits > 0 && shippedMentions === 0) {
+  for (const match of text.matchAll(/v(\d+)\.(\d+)/g)) {
+    const [major, minor] = [Number(match[1]), Number(match[2])];
+    const isReleased = major < curMajor || (major === curMajor && minor <= curMinor);
+    if (!isReleased) continue;
+
+    // "v0.5 · shipped" is the one correct way to name a released version.
+    const following = text.slice(match.index, match.index + 60);
+    if (/shipped/i.test(following)) continue;
+
     problems.push(
-      `${doc}: mentions v${currentMinor} without marking it shipped, but ${pkg.version} is the current release.`,
+      `${doc}: presents v${major}.${minor} as future, but ${pkg.version} is already released. ` +
+        `Drop the version number or mark it shipped.`,
     );
   }
 }
