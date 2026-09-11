@@ -218,3 +218,15 @@ regardless. The command was guarding a step that was not the real boundary,
 at the cost of a step most users would never perform.
 
 The CLI still does all of it, for scripting and for people who prefer it.
+
+## 0.4.1
+
+Replaced "with consent" with "approved on both sides" in the tagline, the npm
+description, the site title and the deck cover.
+
+"With consent" next to "AI memory" reads as *it asks before remembering* —
+which is not what happens in `auto` mode, the default. The consent in memshare
+is at the sharing boundary: only shareable items are eligible, PII is held
+back, the sender is shown the exact list before a file exists, and the
+recipient takes only what they want. The new wording says who consents and to
+what, and cannot be misread as a promise the tool does not make.
