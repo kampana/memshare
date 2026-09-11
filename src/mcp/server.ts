@@ -1,10 +1,16 @@
+import * as path from "node:path";
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
 import { detectProjectTag } from "../memory/project.js";
-import { MemoryStore } from "../memory/store.js";
+import { summarisePII } from "../memory/redact.js";
+import { MemoryStore, expandHome, parseDuration } from "../memory/store.js";
 import { Visibility, type Mode } from "../memory/types.js";
+import { readBundleFile, writeBundleFile } from "../sharing/bundle.js";
+import { buildExportBundle, selectForExport } from "../sharing/export.js";
+import { applyImport, planImport, senderTag } from "../sharing/import.js";
 
 /**
  * The MCP adapter. It owns no state -- every tool call goes straight to the
@@ -48,7 +54,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.3.2" },
+    { name: "memshare", version: "0.4.0" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -246,6 +252,184 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
           (visibility === "shareable"
             ? "They are still on this machine only. Sharing them takes an explicit `memshare export`, which the user runs and approves."
             : "They can no longer be included in any export."),
+      );
+    },
+  );
+
+  server.registerTool(
+    "memory_export",
+    {
+      title: "Prepare memories to share with someone",
+      description:
+        "Write a bundle file the user can send to another person. Nothing is transmitted -- this " +
+        "only writes a file to their machine, which they then send however they like.\n\n" +
+        "**Always call this twice.** The first call, without `confirmed`, changes nothing and " +
+        "returns exactly what would go in, including anything held back for containing personal " +
+        "or sensitive data. Show that list to the user in full and wait. Only if they agree, call " +
+        "again with `confirmed: true` to write the file.\n\n" +
+        "Never call it with `confirmed: true` first. The user deciding what leaves their machine " +
+        "is the point of this tool, not an obstacle to route around.\n\n" +
+        "Only items the user has marked 'shareable' are eligible; private ones are never included.",
+      inputSchema: {
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe("Limit to memories carrying any of these tags. Omit to offer everything shareable."),
+        query: z.string().optional().describe("Limit to memories matching this text."),
+        for: z
+          .string()
+          .optional()
+          .describe("Who the bundle is for, recorded in it. E.g. 'sam'."),
+        expires: z
+          .string()
+          .optional()
+          .describe("Refuse import after this long, e.g. '30d'. Imported items inherit the deadline."),
+        note: z.string().optional().describe("A short note to the recipient."),
+        confirmed: z
+          .boolean()
+          .optional()
+          .describe("Leave unset to preview. Set true only after the user has seen the list and agreed."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    },
+    async ({ tags, query, for: forWhom, expires, note, confirmed }) => {
+      const selection = await selectForExport(store, {
+        ...(tags && tags.length > 0 ? { tags } : {}),
+        ...(query ? { query } : {}),
+      });
+
+      if (selection.included.length === 0 && selection.blocked.length === 0) {
+        const why =
+          selection.skipped.length > 0
+            ? ` ${selection.skipped.length} memory(s) matched but are marked private.`
+            : "";
+        return text(
+          `Nothing to export.${why} Only memories marked 'shareable' can be included -- ` +
+            "memory_set_visibility can change that, if the user asks.",
+        );
+      }
+
+      const lines = selection.included.map((c) => `- ${c.item.content}`);
+      const blocked = selection.blocked.map(
+        (c) => `- ${c.item.content}\n    held back: ${summarisePII(c.findings)}`,
+      );
+
+      if (!confirmed) {
+        const parts = [
+          `Nothing written yet. This would share ${selection.included.length} memory(s)` +
+            (forWhom ? ` with ${forWhom}` : "") +
+            ":",
+          lines.join("\n") || "(none)",
+        ];
+        if (blocked.length > 0) {
+          parts.push(
+            `\n${selection.blocked.length} held back for containing personal or sensitive data:`,
+            blocked.join("\n"),
+            "Those stay out unless the user explicitly asks to include them, via `memshare export --redact-blocked`.",
+          );
+        }
+        parts.push(
+          "\nShow this list to the user and wait. Call again with confirmed: true only if they agree.",
+        );
+        return text(parts.join("\n"));
+      }
+
+      if (selection.included.length === 0) {
+        return text(
+          "Every matching memory was held back for containing sensitive data. Nothing written.",
+        );
+      }
+
+      const config = await store.readConfig();
+      const bundle = buildExportBundle(
+        selection.included.map((c) => c.item),
+        {
+          exportedBy: config.displayName,
+          ...(note ? { description: note } : {}),
+          ...(forWhom ? { exportedFor: forWhom } : {}),
+          ...(expires ? { expiresAt: parseDuration(expires) } : {}),
+        },
+      );
+      const written = await writeBundleFile(bundle, store.bundlesDir);
+
+      return text(
+        `Wrote ${written}\n${selection.included.length} memory(s)` +
+          (forWhom ? ` for ${forWhom}` : "") +
+          (expires ? `, expiring in ${expires}` : "") +
+          `.\n\nTell the user where the file is and that they need to send it themselves -- ` +
+          "memshare never transmits anything. The recipient runs `memshare import <file>` and " +
+          "accepts items one by one.",
+      );
+    },
+  );
+
+  server.registerTool(
+    "memory_import",
+    {
+      title: "Take in memories someone sent",
+      description:
+        "Read a bundle file another person sent and add the memories the user wants from it.\n\n" +
+        "**Always call this twice.** The first call, without `confirmed`, changes nothing and " +
+        "returns every item in the bundle, flagging which ones the user already knows and " +
+        "anything that looks sensitive. Show that list and wait. Only if they agree, call again " +
+        "with `confirmed: true`.\n\n" +
+        "By default the second call takes everything new. If the user only wants some of it, pass " +
+        "`accept` with the ids from the preview.\n\n" +
+        "Imported memories are stored private, whatever the sender marked them -- receiving " +
+        "something is not permission to pass it on. Nothing the user already had is overwritten.",
+      inputSchema: {
+        file: z.string().min(1).describe("Path to the .memshare.json file the sender provided."),
+        confirmed: z
+          .boolean()
+          .optional()
+          .describe("Leave unset to preview. Set true only after the user has seen the list and agreed."),
+        accept: z
+          .array(z.string())
+          .optional()
+          .describe("Ids from the preview to take. Omit to take everything new."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false },
+    },
+    async ({ file, confirmed, accept }) => {
+      const result = await readBundleFile(path.resolve(expandHome(file)));
+      if (!result.ok || !result.bundle) {
+        return text(`Cannot use this bundle:\n${result.errors.map((e) => `- ${e}`).join("\n")}`);
+      }
+
+      const plan = await planImport(store, result.bundle);
+      const from = plan.bundle.metadata.exportedBy;
+
+      if (!confirmed) {
+        const lines = plan.entries.map((e) => {
+          const flags = [
+            e.status === "duplicate" ? "already known" : undefined,
+            e.status === "expired" ? "expired" : undefined,
+            e.findings.length > 0 ? `sensitive: ${summarisePII(e.findings)}` : undefined,
+          ].filter(Boolean);
+          return `- ${e.item.content}${flags.length > 0 ? `  (${flags.join("; ")})` : ""}\n    id: ${e.item.id}`;
+        });
+        return text(
+          `Nothing imported yet. ${from} sent ${plan.counts.total} memory(s), ` +
+            `${plan.counts.new} of them new:\n${lines.join("\n")}\n\n` +
+            "Show this to the user and wait. Call again with confirmed: true to take the new ones, " +
+            "or pass `accept` with the ids they actually want.",
+        );
+      }
+
+      const acceptedIds =
+        accept && accept.length > 0
+          ? accept
+          : plan.entries.filter((e) => e.status === "new").map((e) => e.item.id);
+
+      if (acceptedIds.length === 0) return text("Nothing new to import.");
+
+      const applied = await applyImport(store, plan, {
+        acceptedIds,
+        addTags: [senderTag(from)],
+      });
+      return text(
+        `Imported ${applied.imported.length} memory(s) from ${from}, stored private and tagged ` +
+          `${senderTag(from)}. Nothing the user already had was changed.`,
       );
     },
   );

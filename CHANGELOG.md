@@ -196,3 +196,25 @@ the "Next:" output made a three-step install look like a four-step one.
 
 Setup is back to: install, init, connect. The instructions command is now
 documented under "If nothing is being captured", which is when it helps.
+
+## 0.4.0
+
+**Sharing is conversational.** Two new MCP tools mean the whole round trip can
+be done by talking:
+
+- `memory_export` — "send the project-x notes to Sam, good for 30 days"
+- `memory_import` — "import what Dana sent me"
+
+Both use a two-phase handshake. The first call previews and writes nothing,
+returning exactly what would happen, including anything held back for
+containing personal data. Only a second call with `confirmed: true` acts. The
+approval moves into the conversation rather than disappearing from it.
+
+This reverses an earlier decision to keep export CLI-only. That argument —
+"the moment something leaves your machine should be a deliberate command" —
+was wrong about where the boundary is. `export` writes a file to your own
+disk and transmits nothing; it leaves when you send it, which is manual
+regardless. The command was guarding a step that was not the real boundary,
+at the cost of a step most users would never perform.
+
+The CLI still does all of it, for scripting and for people who prefer it.

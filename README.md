@@ -41,7 +41,7 @@ After setup, capture and recall happen in conversation — there is no command t
 >
 > *"remember that I like dark mode"* → the AI calls `memory_set`
 
-The commands exist for the decisions you should not delegate to a model: **what becomes shareable, what gets exported, and what you accept from someone else.** That is the point, not an unfinished UI.
+Sharing works the same way. Ask to send something and you are shown the exact list — including anything held back for containing personal data — before a file is written. Ask to take something in and you see every item first. **The approval moves into the conversation rather than disappearing from it.** The CLI does all of this too, for scripting and for people who prefer it.
 
 Promoting happens either way — in conversation, or at a prompt:
 
@@ -184,14 +184,16 @@ It does **not** delete the bundle file, and it is **cooperative, not enforced**:
 
 ## MCP tools
 
-The server exposes five tools to any MCP client:
+The server exposes seven tools to any MCP client:
 
 | Tool | What it does |
 |---|---|
 | `memory_set` | Save one durable fact, choosing `private` or `shareable` for it. Routed to the approval queue in `suggest` mode. |
 | `memory_get` | Recall memories by free text, tags, or most-recent. |
 | `memory_suggest` | Propose memories for the user to approve later. |
-| `memory_set_visibility` | Mark memories shareable or private, when the user asks in conversation. |
+| `memory_set_visibility` | Mark memories shareable or private, when the user asks. |
+| `memory_export` | Prepare a bundle to send someone. Previews first, writes only on confirmation. |
+| `memory_import` | Take in a bundle someone sent. Previews first, imports only on confirmation. |
 | `memory_list_tags` | List every tag, so the model reuses tags instead of inventing near-duplicates. |
 
 ## CLI reference

@@ -511,3 +511,17 @@ It now appears in the README under "If nothing is being captured", which is the 
 0.3.0 made `visibility` a required argument on `memory_set`, so the assistant chooses at capture time. Six places across the landing page, the deck and the README still said everything lands `private` and has to be promoted afterwards — the pre-0.3.0 behaviour.
 
 Worth noting how this got through: `check:docs` validates commands, package names and version numbers, but it cannot tell that a sentence describing behaviour has stopped being true. Semantic drift like this is only caught by reading, which is exactly why the contributing guide says the three documents change together with the code, and not merely that a script will catch mistakes.
+
+## Conversation first, everywhere
+
+The guiding principle: a user says what they want in plain language and memshare remembers, exports and shares. The CLI is for scripting and for people who prefer it — not the path anyone is expected to take. A capability reachable only by command is, for a designer or anyone else who does not live in a terminal, a capability that does not exist.
+
+That reverses an earlier decision. Export was deliberately CLI-only, on the argument that "the moment something leaves your machine should be a deliberate command". The argument was wrong about where the boundary is: `export` writes a file to the user's own disk and transmits nothing. The moment it actually leaves is when the user emails it or drops it in Slack, which is manual regardless. The CLI requirement was guarding a step that was not the real boundary, at the cost of a step most users would never perform.
+
+### The two-phase pattern
+
+Anything with consent weight uses it. The first call **previews and writes nothing**, returning exactly what would happen — which memories, and what is being held back and why. Only a second call carrying `confirmed: true` acts.
+
+`memory_export` and `memory_import` both work this way, and their descriptions tell the model to always preview first, show the user the full list, and wait. That is a prompt-level constraint rather than an enforced one, and it is acceptable because of what the blast radius actually is: an export writes a local file containing only items already marked shareable and already screened for PII, and an import writes into the user's own store without overwriting anything.
+
+The pattern is the rule for future capabilities, not a one-off.

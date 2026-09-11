@@ -590,14 +590,14 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 <div class="slide" data-slide="9">
   <div class="tag">In Practice</div>
   <h2>Nobody wrote a single page of <span class="accent">documentation</span>.</h2>
-  <p class="subtitle" style="margin-bottom: 2.5vmin; font-size: 2.2vmin;">Almost none of this is typed at a terminal. You talk to your AI; the context accumulates on its own.</p>
+  <p class="subtitle" style="margin-bottom: 2.5vmin; font-size: 2.2vmin;">None of this is typed at a terminal. You talk to your AI; the context accumulates, and moves, on its own.</p>
   <div class="three-col" style="gap: 3vmin;">
 
     <div class="card" style="padding: 3vmin;">
       <p style="font-size: 1.5vmin; color: var(--color-green); font-weight: 600; margin-bottom: 1.2vmin;">DAY 0 · DANA (TECH LEAD)</p>
       <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Install, then forget it</h3>
       <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
-        Install once. After that she never types a memshare command — she just works, and her AI records what it learns.
+        Install once. After that she never types a memshare command at all — she just works, and her AI records what it learns.
       </p>
       <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
         <span class="comment"># she just says, mid-conversation:</span><br>
@@ -612,7 +612,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       <p style="font-size: 1.5vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1.2vmin;">DAY 14 · DANA</p>
       <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Send what the team needs</h3>
       <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
-        ~40 memories, already marked as they were learned. She checks, corrects anything by saying so, then runs the one command that matters.
+        ~40 memories, already marked as they were learned. She checks, corrects anything by saying so, and asks for the ones Sam needs. She sees the list before anything is written.
       </p>
       <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
         <span class="string">"what have you learned<br>
@@ -621,8 +621,9 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
         <span class="string">"keep the client pricing one private"</span><br>
         <span class="comment">→ memory_set_visibility()</span><br>
         <br>
-        <span class="comment"># the only command. it leaves the machine:</span><br>
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"sam"</span>
+        <span class="string">"send the project-x notes to Sam"</span><br>
+        <span class="comment">→ memory_export() shows her the list first</span><br>
+        <span class="comment">→ she says yes. a file is written.</span>
       </div>
     </div>
 
@@ -633,8 +634,9 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
         Sam accepts item by item. Then he is back to plain conversation — and his AI already knows the codebase.
       </p>
       <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
-        <span class="comment"># Dana sends one file, Sam runs:</span><br>
-        <span class="cmd">memshare</span> import bundle-a3f8...<br>
+        <span class="comment"># Dana sends him the file. Sam says:</span><br>
+        <span class="string">"import what Dana sent me"</span><br>
+        <span class="comment">→ he sees each item, picks what he wants</span><br>
         <br>
         <span class="comment"># then, on day one:</span><br>
         <span class="string">"how do migrations work here?"</span><br>
@@ -644,7 +646,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 
   </div>
   <p style="font-size: 1.8vmin; color: var(--color-text-muted); text-align: center; margin-top: 3vmin;">
-    Nobody wrote a wiki page, and almost nothing was typed. <span class="green">The one step that stays a command is the moment something actually leaves your machine.</span>
+    Nobody wrote a wiki page, and nobody typed a command. <span class="green">Every step was a sentence — and both sides still saw exactly what was changing hands before it moved.</span>
   </p>
 </div>
 
@@ -660,7 +662,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </div>
       <p class="body-text">Dana joins the team. Instead of spending a week "teaching" her Claude about the project, the tech lead shares a bundle — internal terms, architecture decisions, code conventions.</p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x,onboarding"</span> <span class="flag">--for</span> <span class="string">"dana"</span>
+        <span class="string">"share the project-x onboarding<br>&nbsp;notes with Dana"</span><br><span class="comment">→ shows you exactly what would go,<br>&nbsp;&nbsp; then writes it once you say yes</span>
       </div>
     </div>
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
@@ -670,7 +672,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </div>
       <p class="body-text">Uri finished his part of the project. Instead of the next freelancer starting from zero, Uri shares a bundle — client preferences, decision history, technical gotchas.</p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"client-acme"</span> <span class="flag">--expires</span> <span class="string">"30d"</span>
+        <span class="string">"hand over everything about<br>&nbsp;client-acme, good for 30 days"</span>
       </div>
     </div>
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
@@ -680,8 +682,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </div>
       <p class="body-text">The designer&rsquo;s AI knows the component conventions. The backend devs&rsquo; AI knows the API contract. One bundle each way and neither side re-explains. <span style="color: var(--color-green);">Different people <em>and</em> different vendors — the only tool that crosses both.</span></p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"design-system"</span> <span class="flag">--for</span> <span class="string">"the-devs"</span><br>
-        <span class="comment"># Cursor → Claude. same bundle format.</span>
+        <span class="string">"send the design system notes<br>&nbsp;to the backend team"</span><br><span class="comment">→ Cursor to Claude. same format.</span>
       </div>
     </div>
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
@@ -691,7 +692,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </div>
       <p class="body-text">A senior engineer "taught" their Claude about best practices, design patterns, and review guidelines. Instead of writing a guide — they share the memory directly.</p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"best-practices,code-review"</span>
+        <span class="string">"share my code review<br>&nbsp;guidelines with the team"</span>
       </div>
     </div>
   </div>
@@ -827,8 +828,8 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       </p>
       <div style="display: flex; gap: 3vmin; justify-content: center; flex-wrap: wrap;">
         <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
-          <p style="font-size: 2.2vmin; font-weight: 600;">✅ v0.3 · shipped</p>
-          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">CLI + MCP server<br>Consent flow + bundles</p>
+          <p style="font-size: 2.2vmin; font-weight: 600;">✅ v0.4 · shipped</p>
+          <p style="font-size: 1.6vmin; color: var(--color-text-muted);">Talk to share<br>Consent on both sides</p>
         </div>
         <div class="card" style="padding: 2.5vmin 3.5vmin; text-align: center;">
           <p style="font-size: 2.2vmin; font-weight: 600;">📡 NEXT</p>

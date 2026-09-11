@@ -253,11 +253,11 @@
 <section id="how">
   <div class="wrap">
     <p class="eyebrow">How it works</p>
-    <h2>Nothing to run — until you share.</h2>
+    <h2>You talk. It remembers, and hands things over.</h2>
     <p class="section-lede">
-      Capture, recall and deciding what is shareable all happen in conversation. The one step that
-      stays a command is the moment something actually leaves your machine — that decision should
-      not be delegated to a model.
+      Every step is a sentence. Before anything is written or taken in, memshare shows you exactly
+      what is about to change hands, and waits — the approval moves into the conversation instead
+      of disappearing from it.
     </p>
 
     <div class="step">
@@ -277,7 +277,7 @@
         <h3>You decide what the team gets</h3>
         <p>The assistant marks project facts shareable and anything about you private. Reviewing that, and changing your mind, is yours — either in conversation or at a prompt.</p>
         <p class="said">"make the project-x notes shareable"</p>
-        <pre><span class="g">memshare</span> mark <span class="f">--tags</span> <span class="s">"project-x"</span> <span class="f">--shareable</span></pre>
+        <pre><span class="c">→ memory_set_visibility(). no command, no syntax.</span></pre>
       </div>
     </div>
 
@@ -285,12 +285,14 @@
       <div><div class="step-n">3</div></div>
       <div>
         <h3>They accept what's useful</h3>
-        <p>Send the bundle however you like — Slack, email, a USB stick. The recipient previews every item and takes only what they want. Nothing they already had is overwritten.</p>
-        <pre><span class="g">memshare</span> export <span class="f">--tags</span> <span class="s">"project-x"</span> <span class="f">--for</span> <span class="s">"sam"</span> <span class="f">--expires</span> <span class="s">"30d"</span>
-<span class="c"># → bundle-a3f8c2d1.memshare.json</span>
+        <p>You are shown the exact list before a file is written. Send it however you like — Slack, email, a USB stick. On the other side they see every item and take only what they want, and nothing they already had is overwritten.</p>
+        <p class="said">"send the project-x notes to Sam, good for 30 days"</p>
+        <pre><span class="c">→ 2 memories would go. 1 held back (contains an email).</span>
+<span class="c">→ you say yes, and the bundle file is written.</span>
 
-<span class="c"># on Sam's machine</span>
-<span class="g">memshare</span> import bundle-a3f8c2d1.memshare.json</pre>
+<span class="c"># Sam, on his machine:</span>
+<span class="s">"import what Dana sent me"</span>
+<span class="c">→ he sees each item and picks what he wants</span></pre>
       </div>
     </div>
   </div>
