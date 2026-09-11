@@ -489,3 +489,13 @@ Capture is the one thing memshare cannot force. Nothing in MCP lets a server com
 It is the same guidance the MCP server already sends, deliberately duplicated through a channel that always arrives. `memshare init` now points at it, because a user who never runs it is the most likely failure mode of the whole product.
 
 The canonical text lives in `src/instructions.ts` and is exported from the library, so a future adapter can print the same thing.
+
+## A landing page, alongside the deck
+
+`docs/index.html` used to be a redirect to the deck. It is now a proper landing page, and the deck stays at `/pitch.html`.
+
+They do different jobs. A deck is linear and assumes someone is narrating it. A landing page is for a stranger arriving from Hacker News or an npm listing with fifteen seconds of patience: what is this, how do I install it, why should I trust it, where do I star it.
+
+The page carries a "What it doesn't do" section on purpose — no revocation, capture depends on the model, no ChatGPT support yet. Naming the limits before a reader finds them is what makes the rest of the claims credible.
+
+`check:docs` now validates `docs/index.html` too, including commands inside `<pre>` and `<code>`, so the landing page cannot promise a command that does not exist.
