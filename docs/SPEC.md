@@ -499,3 +499,9 @@ They do different jobs. A deck is linear and assumes someone is narrating it. A 
 The page carries a "What it doesn't do" section on purpose — no revocation, capture depends on the model, no ChatGPT support yet. Naming the limits before a reader finds them is what makes the rest of the claims credible.
 
 `check:docs` now validates `docs/index.html` too, including commands inside `<pre>` and `<code>`, so the landing page cannot promise a command that does not exist.
+
+## `memshare instructions` is a fallback, not a setup step
+
+0.3.1 put it in `init`'s "Next:" output, which made a three-step install look like four. The MCP server already sends this guidance in its handshake and in every tool description; the command exists for clients that drop server instructions on the floor.
+
+It now appears in the README under "If nothing is being captured", which is the situation where it is worth running. Setup is install, init, connect.

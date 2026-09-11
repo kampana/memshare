@@ -31,18 +31,6 @@ claude mcp add memshare -- npx -y memshare-mcp serve
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
 
-## Tell your assistant to use it
-
-memshare can offer memory, but nothing in MCP can make a model *use* it. The server sends guidance in its handshake, and some clients never pass that to the model. So say it once more, in the file your tool reads every session:
-
-```bash
-memshare instructions --append ~/.claude/CLAUDE.md    # Claude Code
-memshare instructions --append ./AGENTS.md            # Cursor, Windsurf, Copilot
-memshare instructions                                 # just print it
-```
-
-Safe to run twice — it checks before appending. This is the single thing most likely to decide whether your store has forty memories after a month, or four.
-
 ## You mostly talk, not type
 
 After setup, capture and recall happen in conversation — there is no command to run:
@@ -82,6 +70,19 @@ memshare add "Auth service uses JWT with 15min refresh" --tags project-x,auth --
 memshare list
 memshare list --tags project-x
 ```
+
+## If nothing is being captured
+
+memshare can offer memory, but nothing in MCP can make a model *use* it. The server asks the assistant to save as it learns — in its handshake and in every tool description — but some clients never pass server instructions to the model at all.
+
+If `memshare list` is still empty after a few days of real work, say it once more in the file your tool reads every session:
+
+```bash
+memshare instructions --append ~/.claude/CLAUDE.md    # Claude Code
+memshare instructions --append ./AGENTS.md            # Cursor, Windsurf, Copilot
+```
+
+Safe to run twice — it checks before appending.
 
 ## Try it in a sandbox first
 

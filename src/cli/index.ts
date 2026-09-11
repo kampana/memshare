@@ -40,7 +40,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.3.1";
+const VERSION = "0.3.2";
 
 const program = new Command();
 
@@ -129,8 +129,7 @@ program
     console.log();
     console.log(heading("Next:"));
     console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
-    console.log(`  memshare instructions --append ~/.claude/CLAUDE.md`);
-    console.log(c.dim(`    (tells your assistant to actually use the store - worth doing)`));
+    console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
     console.log();
   });
 

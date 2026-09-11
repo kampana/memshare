@@ -357,36 +357,11 @@
     </p>
     <pre><span class="g">npm</span> install -g memshare-mcp
 <span class="g">memshare</span> init
-
-<span class="c"># connect it to your assistant</span>
-<span class="g">claude</span> mcp add memshare --scope user -- memshare serve
-
-<span class="c"># and tell the assistant to actually use it</span>
-<span class="g">memshare</span> instructions <span class="f">--append</span> ~/.claude/CLAUDE.md</pre>
+<span class="g">claude</span> mcp add memshare --scope user -- memshare serve</pre>
+    <p class="note">That is the whole setup. Restart your assistant and it can recall and save straight away.</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/kampana/memshare" target="_blank" rel="noopener">★ Star on GitHub</a>
       <a class="btn btn-ghost" href="https://www.npmjs.com/package/memshare-mcp" target="_blank" rel="noopener">View on npm</a>
-    </div>
-  </div>
-</section>
-
-<section id="honest">
-  <div class="wrap">
-    <p class="eyebrow">Worth knowing</p>
-    <h2>What it doesn't do.</h2>
-    <div class="grid grid-3">
-      <div class="card">
-        <h3>You can't un-share</h3>
-        <p>Once someone imports your memories they are theirs, like emailing a PDF. <code>--expires</code> stops a bundle being imported later and ages out what was taken, but it is cooperative, not enforced. Revocation needs a team server — that's on the roadmap.</p>
-      </div>
-      <div class="card">
-        <h3>Capture depends on the model</h3>
-        <p>Nothing in MCP lets a server force a tool call. memshare asks the assistant to save as it learns, in three separate places — but it cannot compel it.</p>
-      </div>
-      <div class="card">
-        <h3>ChatGPT isn't supported yet</h3>
-        <p>It can't launch a local process, so it needs a different route. Claude Code, Cursor, Copilot and Windsurf all work today — they speak MCP and need no adapter.</p>
-      </div>
     </div>
   </div>
 </section>

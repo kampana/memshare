@@ -186,3 +186,13 @@ compel a tool call, and some clients never forward the server's instructions
 to the model at all. This says the same thing through a channel that always
 arrives. `memshare init` now points at it, because a user who skips this step
 ends up with an empty store and no idea why.
+
+## 0.3.2
+
+`memshare init` no longer pushes `memshare instructions`. That command is a
+fallback for clients that do not forward the server's instructions to the
+model — useful when capture is not happening, not a setup step. Putting it in
+the "Next:" output made a three-step install look like a four-step one.
+
+Setup is back to: install, init, connect. The instructions command is now
+documented under "If nothing is being captured", which is when it helps.
