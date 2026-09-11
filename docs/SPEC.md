@@ -479,3 +479,13 @@ This does not weaken anything. `shareable` only makes an item eligible for an ex
 ## Roadmap stages are no longer numbered
 
 Tying roadmap stages to version numbers collided with reality twice — once when 0.2.0 shipped while the deck still called v0.2 future, and again when this release took 0.3.0. Only the shipped card carries a version now; everything after it is a theme (NEXT / LATER / SOMEDAY). `check:docs` still verifies the shipped card matches `package.json`.
+
+## `memshare instructions`
+
+Capture is the one thing memshare cannot force. Nothing in MCP lets a server compel a tool call, and not every client forwards the server's `instructions` field to the model at all — so a user can install everything correctly and still end up with an empty store, with no indication why.
+
+`memshare instructions` prints standing instructions to paste into whatever file the assistant reads each session: `CLAUDE.md` for Claude Code, `AGENTS.md` for Cursor, Windsurf and Copilot. `--append <file>` writes them in place, and checks for the marker first so running it twice is harmless.
+
+It is the same guidance the MCP server already sends, deliberately duplicated through a channel that always arrives. `memshare init` now points at it, because a user who never runs it is the most likely failure mode of the whole product.
+
+The canonical text lives in `src/instructions.ts` and is exported from the library, so a future adapter can print the same thing.

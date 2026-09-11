@@ -31,6 +31,18 @@ claude mcp add memshare -- npx -y memshare-mcp serve
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
 
+## Tell your assistant to use it
+
+memshare can offer memory, but nothing in MCP can make a model *use* it. The server sends guidance in its handshake, and some clients never pass that to the model. So say it once more, in the file your tool reads every session:
+
+```bash
+memshare instructions --append ~/.claude/CLAUDE.md    # Claude Code
+memshare instructions --append ./AGENTS.md            # Cursor, Windsurf, Copilot
+memshare instructions                                 # just print it
+```
+
+Safe to run twice — it checks before appending. This is the single thing most likely to decide whether your store has forty memories after a month, or four.
+
 ## You mostly talk, not type
 
 After setup, capture and recall happen in conversation — there is no command to run:
@@ -201,6 +213,7 @@ The server exposes five tools to any MCP client:
 | `memshare forget <ids...>` | Delete memories |
 | `memshare prune` | Delete expired memories |
 | `memshare config` | Show or change settings. `--set key=value` |
+| `memshare instructions` | Print standing instructions for your assistant. `--append <file>` |
 | `memshare serve` | Run the MCP server on stdio |
 
 `--dir <path>` or `MEMSHARE_DIR` points any command at a different store — handy for keeping a separate memory profile per client, or for trying the sharing flow with yourself:

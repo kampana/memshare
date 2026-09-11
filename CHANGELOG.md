@@ -174,3 +174,15 @@ private for anything about the person, private when it is arguable.
 **Roadmap stages are no longer numbered.** Tying them to versions collided
 with reality twice. Only the shipped card carries a version; the rest are
 themes.
+
+## 0.3.1
+
+**New: `memshare instructions`.** Prints standing instructions to paste into
+`CLAUDE.md`, `AGENTS.md`, or whatever file your assistant reads each session.
+`--append <file>` writes them in place and is safe to run twice.
+
+Capture is the one thing memshare cannot force — nothing in MCP lets a server
+compel a tool call, and some clients never forward the server's instructions
+to the model at all. This says the same thing through a channel that always
+arrives. `memshare init` now points at it, because a user who skips this step
+ends up with an empty store and no idea why.

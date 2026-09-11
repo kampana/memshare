@@ -1,12 +1,15 @@
 #!/usr/bin/env node
+import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
 import { checkbox, confirm, input, select } from "@inquirer/prompts";
 import { Command, Option } from "commander";
 
+import { ASSISTANT_INSTRUCTIONS, INSTRUCTIONS_MARKER } from "../instructions.js";
 import { summarisePII } from "../memory/redact.js";
 import {
   MemoryStore,
+  expandHome,
   normaliseTags,
   parseDuration,
   parseTagList,
@@ -37,7 +40,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.3.0";
+const VERSION = "0.3.1";
 
 const program = new Command();
 
@@ -126,7 +129,8 @@ program
     console.log();
     console.log(heading("Next:"));
     console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
-    console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
+    console.log(`  memshare instructions --append ~/.claude/CLAUDE.md`);
+    console.log(c.dim(`    (tells your assistant to actually use the store - worth doing)`));
     console.log();
   });
 
@@ -840,6 +844,38 @@ function printPlan(plan: ImportPlan): void {
   }
   console.log();
 }
+
+// ---------------------------------------------------------------- instructions
+
+program
+  .command("instructions")
+  .description("print standing instructions to paste into CLAUDE.md / AGENTS.md")
+  .option("--append <file>", "append them to that file instead of printing")
+  .action(async (opts: { append?: string }) => {
+    if (!opts.append) {
+      console.log(ASSISTANT_INSTRUCTIONS);
+      return;
+    }
+
+    const file = expandHome(opts.append);
+    let existing = "";
+    try {
+      existing = await fs.readFile(file, "utf8");
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
+    }
+
+    if (existing.includes(INSTRUCTIONS_MARKER)) {
+      console.log(info(`${file} already has them. Nothing changed.`));
+      return;
+    }
+
+    await fs.mkdir(path.dirname(file), { recursive: true });
+    const separator = existing === "" || existing.endsWith("\n\n") ? "" : existing.endsWith("\n") ? "\n" : "\n\n";
+    await fs.appendFile(file, `${separator}${ASSISTANT_INSTRUCTIONS}`, "utf8");
+    console.log(ok(`Added them to ${c.bold(file)}`));
+    console.log(info("Restart your assistant for it to pick them up."));
+  });
 
 // ---------------------------------------------------------------- serve
 

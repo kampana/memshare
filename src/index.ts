@@ -6,6 +6,7 @@
  * should be able to do it against these exports alone.
  */
 
+export * from "./instructions.js";
 export * from "./memory/types.js";
 export * from "./memory/store.js";
 export * from "./memory/redact.js";
