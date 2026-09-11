@@ -505,3 +505,9 @@ The page carries a "What it doesn't do" section on purpose — no revocation, ca
 0.3.1 put it in `init`'s "Next:" output, which made a three-step install look like four. The MCP server already sends this guidance in its handshake and in every tool description; the command exists for clients that drop server instructions on the floor.
 
 It now appears in the README under "If nothing is being captured", which is the situation where it is worth running. Setup is install, init, connect.
+
+## Documentation drift after the visibility change
+
+0.3.0 made `visibility` a required argument on `memory_set`, so the assistant chooses at capture time. Six places across the landing page, the deck and the README still said everything lands `private` and has to be promoted afterwards — the pre-0.3.0 behaviour.
+
+Worth noting how this got through: `check:docs` validates commands, package names and version numbers, but it cannot tell that a sentence describing behaviour has stopped being true. Semantic drift like this is only caught by reading, which is exactly why the contributing guide says the three documents change together with the code, and not merely that a script will catch mistakes.

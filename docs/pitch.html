@@ -372,7 +372,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
         <span style="font-size: 3vmin;">🤖</span>
         <h3 style="font-size: 2.2vmin; color: var(--color-accent-light);">Auto <span style="font-size: 1.4vmin; color: var(--color-text-muted);">(default)</span></h3>
       </div>
-      <p class="body-text">Claude saves what it learns as you work. Everything lands <strong>private</strong> — nothing can be shared until you mark it.</p>
+      <p class="body-text">Claude saves what it learns as you work, choosing <strong>shareable</strong> for project facts and <strong>private</strong> for anything about you. Either way nothing leaves until you approve an export.</p>
       <div style="margin-top: 1.5vmin; padding: 1vmin 1.5vmin; background: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 1.4vmin; color: var(--color-text-muted);">
         Claude silently calls memory_set()
       </div>
@@ -535,7 +535,7 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
         <span class="string">"we went with Postgres —<br>
         &nbsp;the JSONB support decided it"</span><br>
         <span class="comment">→ Claude calls memory_set()</span><br>
-        <span class="comment">→ saved, and private</span>
+        <span class="comment">→ saved as shareable: a project fact</span>
       </div>
     </div>
 

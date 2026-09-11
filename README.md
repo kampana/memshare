@@ -147,11 +147,11 @@ These control what gets **written down** locally. What gets **shared** is a sepa
 
 | Mode | What happens | Who decides |
 |---|---|---|
-| `auto` **(default)** | The AI saves what it learns as you work. Everything lands `private`. | The AI, locally |
+| `auto` **(default)** | The AI saves what it learns as you work, choosing `shareable` or `private` for each. | The AI, locally |
 | `suggest` | The AI calls `memory_suggest`. Nothing is stored until you run `memshare review`. | You, in batch |
 | `manual` | Nothing is saved unless you say "remember this". | You, every time |
 
-`auto` is the default because an empty store is useless, and nothing captured locally can leave your machine until you mark it `shareable` anyway. If you would rather approve every item, use `suggest` — and note that a direct `memory_set` is then queued as a suggestion rather than saved, so an over-eager model cannot skip the consent step.
+`auto` is the default because an empty store is useless. The assistant picks a visibility for every memory — `shareable` for the project, the codebase and how the team works; `private` for anything about you personally, and whenever the call is arguable. Marking something `shareable` only makes it *eligible*: nothing leaves until you run an export and approve the preview. If you would rather approve every item, use `suggest` — and note that a direct `memory_set` is then queued as a suggestion rather than saved, so an over-eager model cannot skip the consent step.
 
 ```bash
 memshare review          # approve or reject, one by one
