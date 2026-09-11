@@ -609,18 +609,20 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     </div>
 
     <div class="card" style="padding: 3vmin;">
-      <p style="font-size: 1.5vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1.2vmin;">DAY 14 · FIVE MINUTES</p>
-      <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Mark what the team needs</h3>
+      <p style="font-size: 1.5vmin; color: var(--color-accent-light); font-weight: 600; margin-bottom: 1.2vmin;">DAY 14 · DANA</p>
+      <h3 style="font-size: 2.1vmin; margin-bottom: 1.2vmin;">Send what the team needs</h3>
       <p style="font-size: 1.45vmin; color: var(--color-text-secondary); line-height: 1.5; margin-bottom: 1.2vmin;">
-        ~40 memories accumulated. Ask the AI what it knows, then make the consent call yourself. That one <em>is</em> a command, on purpose.
+        ~40 memories, already marked as they were learned. She checks, corrects anything by saying so, then runs the one command that matters.
       </p>
       <div class="code-block" style="font-size: 1.15vmin; padding: 1.2vmin 1.5vmin; line-height: 1.55;">
         <span class="string">"what have you learned<br>
         &nbsp;about project-x?"</span><br>
-        <span class="comment">→ Claude calls memory_get()</span><br>
+        <span class="comment">→ memory_get()</span><br>
+        <span class="string">"keep the client pricing one private"</span><br>
+        <span class="comment">→ memory_set_visibility()</span><br>
         <br>
-        <span class="comment"># the consent call is yours:</span><br>
-        <span class="cmd">memshare</span> mark <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--shareable</span>
+        <span class="comment"># the only command. it leaves the machine:</span><br>
+        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"sam"</span>
       </div>
     </div>
 
