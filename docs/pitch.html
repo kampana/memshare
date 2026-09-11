@@ -469,19 +469,17 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
     </div>
   </div>
   <div class="card" style="padding: 3vmin 4vmin; background: var(--color-surface-alt); border-color: var(--color-accent); max-width: 80vmin; margin: 0 auto;">
-    <p style="font-size: 1.6vmin; color: var(--color-text-muted); margin-bottom: 1.5vmin; text-align: center;">Suggest mode — what actually happens:</p>
+    <p style="font-size: 1.6vmin; color: var(--color-text-muted); margin-bottom: 1.5vmin; text-align: center;">Auto mode — what actually happens, with no command and no prompt:</p>
     <div style="font-family: 'SF Mono', 'Fira Code', monospace; font-size: 1.45vmin; line-height: 1.85; color: var(--color-text-secondary);">
-      <span style="color: var(--color-text-muted);">// Claude, mid-conversation — nothing is stored yet</span><br>
-      <span style="color: var(--color-accent-light);">memory_suggest</span>({ suggestions: [<br>
-      &nbsp;&nbsp;{ content: <span style="color: var(--color-yellow);">"Auth service uses JWT with 15min refresh"</span>, tags: [<span style="color: var(--color-yellow);">"auth"</span>] },<br>
-      &nbsp;&nbsp;{ content: <span style="color: var(--color-yellow);">"Team decided Postgres over MySQL"</span>, tags: [<span style="color: var(--color-yellow);">"db"</span>] }<br>
-      ] })<br>
+      <span style="color: var(--color-text-muted);">// Claude, mid-conversation. You never asked it to.</span><br>
+      <span style="color: var(--color-accent-light);">memory_set</span>({ content: <span style="color: var(--color-yellow);">"Auth service uses JWT with 15min refresh"</span>,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tags: [<span style="color: var(--color-yellow);">"auth"</span>], visibility: <span style="color: var(--color-green);">"shareable"</span> })&nbsp;&nbsp;<span style="color: var(--color-text-muted);">← a project fact</span><br>
       <br>
-      <span style="color: var(--color-text-muted);">// Later, in your terminal — you decide</span><br>
-      $ <span style="color: var(--color-green);">memshare</span> review<br>
-      &nbsp;&nbsp;<span style="color: var(--color-green);">◉</span> Auth service uses JWT with 15min refresh<br>
-      &nbsp;&nbsp;<span style="color: var(--color-green);">◉</span> Team decided Postgres over MySQL<br>
-      &nbsp;&nbsp;<span style="color: var(--color-text-muted);">space to toggle · enter to confirm</span>
+      <span style="color: var(--color-accent-light);">memory_set</span>({ content: <span style="color: var(--color-yellow);">"Prefers short PRs, reviewed in the morning"</span>,<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; tags: [<span style="color: var(--color-yellow);">"preferences"</span>], visibility: <span style="color: var(--color-accent-light);">"private"</span> })&nbsp;&nbsp;<span style="color: var(--color-text-muted);">← about you</span><br>
+      <br>
+      <span style="color: var(--color-text-muted);">// Nothing has left your machine, and nothing will,</span><br>
+      <span style="color: var(--color-text-muted);">// until you run an export and approve what is in it.</span>
     </div>
   </div>
 </div>
