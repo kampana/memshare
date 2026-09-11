@@ -34,7 +34,6 @@ The project is described in three places, and they are one set:
 | File | What it is |
 |---|---|
 | `README.md` | What a user reads first |
-| `docs/SPEC.md` | The build spec — schemas, commands, behaviour |
 | `docs/index.html` | The landing page at <https://kampana.github.io/memshare/> — what people see first. |
 | `docs/pitch.html` | **The source of truth.** Published at <https://kampana.github.io/memshare/pitch.html> — when the three disagree, this one wins. |
 

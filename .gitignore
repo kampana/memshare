@@ -9,3 +9,6 @@ npm-debug.log*
 coverage/
 .tmp/
 .npmrc
+
+# The full design spec is kept locally, not published.
+docs/SPEC.md

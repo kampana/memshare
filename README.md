@@ -14,7 +14,7 @@ That third one is the part nothing else does. A designer working in Cursor and b
 
 No central server. No cloud. No signup.
 
-🌐 **[memshare.dev site](https://kampana.github.io/memshare/)** · 📊 **[Pitch deck](https://kampana.github.io/memshare/pitch.html)** · 📄 **[Full spec](docs/SPEC.md)**
+🌐 **[Site](https://kampana.github.io/memshare/)** · 📊 **[Pitch deck](https://kampana.github.io/memshare/pitch.html)**
 
 ---
 
