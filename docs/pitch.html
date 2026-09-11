@@ -188,6 +188,76 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
 .slide.active > *:nth-child(2) { animation-delay: 0.1s; }
 .slide.active > *:nth-child(3) { animation-delay: 0.2s; }
 .slide.active > *:nth-child(4) { animation-delay: 0.3s; }
+
+/* ---------------------------------------------------------------
+   Phones and portrait tablets.
+
+   The deck is a fixed 16:9 stage with everything sized in vmin.
+   That works in landscape and fails badly in portrait: the stage
+   collapses to ~56% of the viewport width in height, vmin resolves
+   against the narrow side so body type lands around 8px, and
+   overflow:hidden quietly crops whatever does not fit.
+
+   Here the stage becomes an ordinary scrolling page, columns stack,
+   and type switches to absolute units. Inline vmin sizes need
+   [style] on the selector to outrank the element's own attribute.
+   --------------------------------------------------------------- */
+@media (max-width: 860px), (orientation: portrait) and (max-width: 1100px) {
+  html, body { height: auto; overflow-x: hidden; overflow-y: auto; }
+  body { display: block; }
+
+  .slide {
+    position: relative; top: auto; left: auto; transform: none;
+    width: 100%; height: auto; min-height: 100vh;
+    max-width: none; max-height: none;
+    padding: 4.5rem 1.25rem 6.5rem;
+    overflow: visible;
+    justify-content: flex-start;
+  }
+
+  .slide h1, .slide h1[style] { font-size: 2.05rem !important; line-height: 1.15 !important; }
+  .slide h2, .slide h2[style] { font-size: 1.5rem !important; line-height: 1.2 !important; }
+  .slide h3, .slide h3[style] { font-size: 1.02rem !important; }
+  .slide p, .slide p[style] { font-size: .9rem !important; line-height: 1.55 !important; }
+  .slide .subtitle, .slide .subtitle[style] { font-size: .98rem !important; margin-top: .7rem; }
+  .slide .tag { font-size: .68rem !important; padding: .25rem .8rem; margin-bottom: 1rem; }
+
+  .slide .card-icon { font-size: 1.9rem !important; margin-bottom: .6rem; }
+  .slide span[style*="font-size: 3"],
+  .slide span[style*="font-size: 4"],
+  .slide span[style*="font-size: 5"] { font-size: 1.7rem !important; }
+
+  .two-col, .three-col { grid-template-columns: 1fr !important; gap: 1.3rem !important; }
+  .slide div[style*="grid-template-columns"] { grid-template-columns: 1fr !important; gap: 1rem !important; }
+
+  .card, .slide .card[style] { padding: 1.15rem !important; }
+
+  .code-block, .slide .code-block[style] {
+    font-size: .73rem !important; line-height: 1.6 !important;
+    padding: .9rem 1rem !important; overflow-x: auto;
+  }
+  .code-block span { font-size: inherit !important; }
+
+  .compare-table { border-spacing: 0 .35rem; }
+  .slide th, .slide td { font-size: .72rem !important; padding: .5rem .5rem !important; }
+
+  .diagram { flex-direction: column; gap: .7rem !important; }
+  .diagram-box { min-width: 0 !important; width: 100%; font-size: .84rem !important; padding: .7rem 1rem !important; }
+  .diagram-arrow { font-size: 1.1rem !important; }
+
+  .flow-steps { gap: 1rem !important; }
+  .flow-step { gap: .9rem !important; }
+  .step-num { width: 2.1rem !important; height: 2.1rem !important; font-size: .88rem !important; }
+
+  .cta-box { padding: 1.6rem 1.2rem !important; }
+
+  .nav { bottom: 1rem; gap: 1rem; }
+  .nav-btn { width: 2.5rem; height: 2.5rem; font-size: 1rem; }
+  .nav-counter { font-size: .78rem; min-width: 4.5rem; }
+
+  /* Entrance animations fight with scrolling on touch. */
+  .slide.active > * { animation: none !important; }
+}
 </style>
 </head>
 <body>

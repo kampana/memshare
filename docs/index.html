@@ -58,11 +58,6 @@
     font-size: .86rem; font-weight: 500; white-space: nowrap;
   }
   .star-btn:hover { background: #24242f; text-decoration: none !important; }
-  .star-count {
-    border-left: 1px solid var(--line); padding-left: 8px;
-    color: var(--text-2); font-variant-numeric: tabular-nums;
-  }
-  .star-count[hidden] { display: none; }
 
   /* ---------- hero ---------- */
   header { padding: 92px 0 72px; position: relative; overflow: hidden; }
@@ -197,7 +192,7 @@
       <a href="#compare">Compare</a>
       <a href="pitch.html">Deck</a>
       <a class="star-btn" href="https://github.com/kampana/memshare" target="_blank" rel="noopener">
-        ★ Star on GitHub <span class="star-count" id="stars" hidden></span>
+        ★ Star on GitHub
       </a>
     </div>
   </div>
@@ -388,17 +383,6 @@
     }).catch(() => { btn.textContent = 'Select it'; });
   }
 
-  // Live star count. Unauthenticated and rate-limited, so failure is silent -
-  // the button reads fine without a number.
-  fetch('https://api.github.com/repos/kampana/memshare')
-    .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
-    .then((d) => {
-      if (typeof d.stargazers_count !== 'number') return;
-      const el = document.getElementById('stars');
-      el.textContent = d.stargazers_count;
-      el.hidden = false;
-    })
-    .catch(() => {});
 </script>
 </body>
 </html>
