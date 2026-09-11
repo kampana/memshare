@@ -516,15 +516,14 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       <span class="comment"># Connect to Claude</span><br>
       <span class="cmd">claude</span> mcp add memshare <span class="flag">--</span> npx -y memshare-mcp serve<br>
       <br>
-      <span class="comment"># See what's in your memory</span><br>
-      <span class="cmd">memshare</span> list<br>
-      <span class="cmd">memshare</span> list <span class="flag">--tags</span> <span class="string">"project-x"</span><br>
+      <span class="comment"># After that, you just talk.</span><br>
+      <span class="string">"what do you know about project-x?"</span><br>
       <br>
-      <span class="comment"># Preview before you share anything</span><br>
-      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--preview</span><br>
+      <span class="string">"remember that migrations run<br>
+      &nbsp;through scripts/migrate.ts"</span><br>
       <br>
-      <span class="comment"># Export when ready</span><br>
-      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"bob"</span>
+      <span class="string">"share the project-x notes with Bob"</span><br>
+      <span class="comment"># → shows you the list, waits for a yes</span>
     </div>
   </div>
 </div>
@@ -553,34 +552,42 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
         <div class="step-num">3</div>
         <div class="step-content">
           <h3>Exact preview</h3>
-          <p>Alice sees exactly what will be included in the bundle before final approval.</p>
+          <p>Before a file exists, Alice is shown the exact list — and what was held back, and why. She approves by saying so.</p>
         </div>
       </div>
       <div class="flow-step">
         <div class="step-num">4</div>
         <div class="step-content">
           <h3>Bob receives and chooses</h3>
-          <p>Bob sees a preview of incoming items. Accepts or rejects per-item. Smart merge, no overwrites.</p>
+          <p>Bob sees every incoming item before any of it lands, and takes only what he wants. Nothing he already had is overwritten.</p>
         </div>
       </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 2vmin;">
-      <div class="code-block" style="font-size: 1.5vmin;">
-        <span class="comment"># Alice exports selected memories</span><br>
-        <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x,architecture"</span> \<br>
-        &nbsp;&nbsp;<span class="flag">--for</span> <span class="string">"bob"</span> \<br>
-        &nbsp;&nbsp;<span class="flag">--expires</span> <span class="string">"7d"</span><br>
+      <div class="code-block" style="font-size: 1.35vmin;">
+        <span class="string">"share the project-x architecture<br>
+        &nbsp;notes with Bob, good for a week"</span><br>
         <br>
-        <span class="comment"># → bundle-a3f8.memshare.json</span><br>
-        <span class="comment"># Alice sends the file to Bob</span>
+        <span class="comment">→ 3 would go:</span><br>
+        &nbsp;&nbsp;<span class="comment">· Team chose Postgres for JSONB</span><br>
+        &nbsp;&nbsp;<span class="comment">· Migrations run via scripts/migrate.ts</span><br>
+        &nbsp;&nbsp;<span class="comment">· Auth uses JWT, 15min refresh</span><br>
+        <span class="comment">→ 1 held back: contains an email address</span><br>
+        <span class="comment">→ nothing written yet.</span><br>
+        <br>
+        <span class="string">"yes, send those"</span><br>
+        <span class="comment">→ file written. Alice sends it however she likes.</span>
       </div>
-      <div class="code-block" style="font-size: 1.5vmin;">
-        <span class="comment"># Bob previews before importing</span><br>
-        <span class="cmd">memshare</span> preview <span class="string">bundle-a3f8.memshare.json</span><br>
+      <div class="code-block" style="font-size: 1.35vmin;">
+        <span class="string">"import what Alice sent me"</span><br>
         <br>
-        <span class="comment"># Bob sees each item and chooses</span><br>
-        <span class="cmd">memshare</span> import <span class="string">bundle-a3f8.memshare.json</span><br>
-        <span class="comment"># → interactive: accept/reject per item</span>
+        <span class="comment">→ Alice sent 3. You already know 1 of them.</span><br>
+        &nbsp;&nbsp;<span class="comment">· Team chose Postgres for JSONB</span><br>
+        &nbsp;&nbsp;<span class="comment">· Migrations run via scripts/migrate.ts</span><br>
+        <span class="comment">→ nothing imported yet.</span><br>
+        <br>
+        <span class="string">"just the migrations one"</span><br>
+        <span class="comment">→ 1 imported. private. tagged from-alice.</span>
       </div>
     </div>
   </div>
@@ -711,8 +718,8 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
       <p class="body-text">Claude Code today, Cursor tomorrow, Windsurf next month. There is nothing to migrate — every MCP client reads the same local store. Same context, zero commands. <span style="color: var(--color-text-muted);">(A ChatGPT adapter is v0.3.)</span></p>
       <div class="code-block" style="font-size: 1.3vmin; padding: 1.5vmin 2vmin;">
         <span class="comment"># nothing to run. it is already there.</span><br>
-        <span class="cmd">memshare</span> list <span class="flag">--from</span> <span class="string">"cursor-vscode"</span><br>
-        <span class="comment"># → what Cursor taught it, in Claude</span>
+        <span class="string">"what did we decide about the design system?"</span><br>
+        <span class="comment"># → asked in Claude, learned in Cursor</span>
       </div>
     </div>
     <div class="card" style="display: flex; flex-direction: column; gap: 1.5vmin;">
@@ -800,18 +807,18 @@ h3 { font-size: 3.5vmin; font-weight: 600; line-height: 1.2; }
   </div>
   <div class="two-col" style="gap: 3vmin;">
     <div class="code-block" style="font-size: 1.3vmin;">
-      <span class="comment"># Local: export a file, send it yourself</span><br>
-      <span class="cmd">memshare</span> export <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--for</span> <span class="string">"bob"</span><br>
-      <span class="comment"># → bundle-a3f8.memshare.json — send via Slack, email, etc.</span>
+      <span class="comment"># Local: you ask, it writes a file, you send it</span><br>
+      <span class="string">"share the project-x notes with Bob"</span><br>
+      <span class="comment"># → bundle-a3f8.memshare.json — Slack, email, anything</span>
     </div>
     <div class="code-block" style="font-size: 1.3vmin;">
-      <span class="comment"># Team server — v0.4, not built yet:</span><br>
-      <span class="cmd">memshare</span> share <span class="flag">--tags</span> <span class="string">"project-x"</span> <span class="flag">--with</span> <span class="string">"bob"</span><br>
+      <span class="comment"># Team server — planned, not built yet:</span><br>
+      <span class="string">"share the project-x notes with Bob"</span><br>
+      <span class="comment"># → no file to send. it just reaches him.</span><br>
       <br>
-      <span class="comment"># Bob sees it in his inbox</span><br>
-      <span class="cmd">memshare</span> inbox<br>
-      <span class="comment"># → Alice shared 3 items (pending)</span><br>
-      <span class="cmd">memshare</span> accept <span class="string">alice/project-x</span>
+      <span class="comment"># and on Bob's side</span><br>
+      <span class="string">"anything new from the team?"</span><br>
+      <span class="comment"># → Alice shared 3 items. Take them?</span>
     </div>
   </div>
 </div>
