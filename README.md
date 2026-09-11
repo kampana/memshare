@@ -31,6 +31,8 @@ claude mcp add memshare -- npx -y memshare-mcp serve
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
 
+> **Asking an AI assistant to install this for you?** Say "install `memshare-mcp` from github.com/kampana/memshare" — not just "install memshare." The plain name `memshare` is a different, unpublished package on npm, and a search for it can surface unrelated results. The command above is the one that actually works.
+
 ## You mostly talk, not type
 
 After setup, capture and recall happen in conversation — there is no command to run:
