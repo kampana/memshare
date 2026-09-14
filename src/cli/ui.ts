@@ -1,5 +1,10 @@
 import type { PiiFinding } from "../memory/redact.js";
+import { shortId } from "../memory/store.js";
 import type { MemoryItem } from "../memory/types.js";
+
+// Re-exported so CLI call sites keep importing their formatting helpers from
+// one place, even though the id shortening itself is library behaviour.
+export { shortId };
 
 /** Colour is opt-out (NO_COLOR) and only when stdout is a terminal. */
 const useColor =
@@ -41,11 +46,6 @@ export function fail(text: string): string {
 
 export function info(text: string): string {
   return `${c.dim("-")} ${text}`;
-}
-
-/** Short id for display; the full id still works everywhere. */
-export function shortId(id: string): string {
-  return id.replace(/-/g, "").slice(0, 8);
 }
 
 export function visibilityBadge(item: MemoryItem): string {

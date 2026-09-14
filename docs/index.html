@@ -275,9 +275,12 @@
       <div><div class="step-n">2</div></div>
       <div>
         <h3>You decide what the team gets</h3>
-        <p>The assistant marks project facts shareable and anything about you private. Reviewing that, and changing your mind, is yours — either in conversation or at a prompt.</p>
+        <p>The assistant marks project facts shareable and anything about you private. Reviewing that, and changing your mind, is yours — either in conversation or at a prompt. Deleting is a sentence too, and only ever yours to ask for.</p>
         <p class="said">"make the project-x notes shareable"</p>
         <pre><span class="c">→ memory_set_visibility(). no command, no syntax.</span></pre>
+        <p class="said">"forget what you know about the old auth flow"</p>
+        <pre><span class="c">→ it shows you what matched, then memory_forget().</span>
+<span class="c">→ the file is gone. nothing to verify, nothing cached.</span></pre>
       </div>
     </div>
 
@@ -285,12 +288,14 @@
       <div><div class="step-n">3</div></div>
       <div>
         <h3>They accept what's useful</h3>
-        <p>You are shown the exact list before a file is written. Send it however you like — Slack, email, a USB stick. On the other side they see every item and take only what they want, and nothing they already had is overwritten.</p>
+        <p>You are shown the exact list before a file is written. Send it however you like — Slack, email, a USB stick. On the other side they can read the whole bundle without taking any of it, then see every item and take only what they want — and nothing they already had is overwritten.</p>
         <p class="said">"send the project-x notes to Sam, good for 30 days"</p>
         <pre><span class="c">→ 2 memories would go. 1 held back (contains an email).</span>
 <span class="c">→ you say yes, and the bundle file is written.</span>
 
 <span class="c"># Sam, on his machine:</span>
+<span class="s">"what's in what Dana sent me?"</span>
+<span class="c">→ the whole list. nothing imported, nothing changed.</span>
 <span class="s">"import what Dana sent me"</span>
 <span class="c">→ he sees each item and picks what he wants</span></pre>
       </div>

@@ -30,8 +30,11 @@ run() { printf '\033[2m$ %s\033[0m\n' "$*"; }
 say "Demo directory: $DEMO"
 say "1. Two people, two independent stores"
 run "memshare init --name alice"
-MEMSHARE_DIR="$ALICE" $MEMSHARE init --name alice --yes >/dev/null
-MEMSHARE_DIR="$BOB" $MEMSHARE init --name bob --yes >/dev/null
+# --no-append-instructions because a real `init` writes standing instructions
+# into any CLAUDE.md / AGENTS.md it finds, and this demo promises to touch
+# nothing outside its temp dir -- including the checkout it is run from.
+MEMSHARE_DIR="$ALICE" $MEMSHARE init --name alice --yes --no-append-instructions >/dev/null
+MEMSHARE_DIR="$BOB" $MEMSHARE init --name bob --yes --no-append-instructions >/dev/null
 echo "   alice and bob each have their own ~/.memshare (here, under the temp dir)"
 
 say "2. Alice's AI captures things as she works"

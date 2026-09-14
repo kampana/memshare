@@ -1,12 +1,14 @@
 #!/usr/bin/env node
+import { existsSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 
 import { checkbox, confirm, input, select } from "@inquirer/prompts";
 import { Command, Option } from "commander";
 
-import { ASSISTANT_INSTRUCTIONS, INSTRUCTIONS_MARKER } from "../instructions.js";
+import { ASSISTANT_INSTRUCTIONS, appendInstructionsToFile } from "../instructions.js";
 import { summarisePII } from "../memory/redact.js";
+import { computeStats } from "../memory/stats.js";
 import {
   MemoryStore,
   expandHome,
@@ -40,7 +42,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.5.0";
+const VERSION = "0.6.0";
 
 const program = new Command();
 
@@ -72,6 +74,21 @@ async function requireStore(): Promise<MemoryStore> {
 
 class UserError extends Error {}
 
+/**
+ * The files an assistant actually reads at the start of a session. `init`
+ * appends to the ones that already exist and creates none of them: putting a
+ * CLAUDE.md in a repo that has none is not memshare's business.
+ */
+function instructionTargets(): string[] {
+  return [
+    ...new Set([
+      expandHome("~/.claude/CLAUDE.md"),
+      path.resolve("CLAUDE.md"),
+      path.resolve("AGENTS.md"),
+    ]),
+  ];
+}
+
 // ---------------------------------------------------------------- init
 
 program
@@ -82,56 +99,104 @@ program
     new Option("--mode <mode>", "how memories get saved").choices(Mode.options),
   )
   .option("-y, --yes", "accept defaults, ask nothing")
-  .action(async (opts: { name?: string; mode?: string; yes?: boolean }) => {
-    const s = store();
-    const existed = s.exists();
-    const current = await s.readConfig();
+  .option(
+    "--no-append-instructions",
+    "leave CLAUDE.md / AGENTS.md alone (they are appended to by default)",
+  )
+  .action(
+    async (opts: {
+      name?: string;
+      mode?: string;
+      yes?: boolean;
+      appendInstructions: boolean;
+    }) => {
+      const s = store();
+      const existed = s.exists();
+      const current = await s.readConfig();
 
-    let displayName = opts.name ?? current.displayName;
-    let mode = (opts.mode as (typeof Mode.options)[number] | undefined) ?? current.mode;
+      let displayName = opts.name ?? current.displayName;
+      let mode = (opts.mode as (typeof Mode.options)[number] | undefined) ?? current.mode;
 
-    if (!opts.yes && isInteractive() && (!opts.name || !opts.mode)) {
-      if (!opts.name) {
-        displayName = await input({
-          message: "Display name (shown to people you share with):",
-          default: displayName === "anonymous" ? guessName() : displayName,
-        });
+      if (!opts.yes && isInteractive() && (!opts.name || !opts.mode)) {
+        if (!opts.name) {
+          displayName = await input({
+            message: "Display name (shown to people you share with):",
+            default: displayName === "anonymous" ? guessName() : displayName,
+          });
+        }
+        if (!opts.mode) {
+          mode = await select({
+            message: "How should memories get saved?",
+            default: mode,
+            choices: [
+              {
+                name: "auto     - the AI saves as it learns, always private (recommended)",
+                value: "auto" as const,
+              },
+              {
+                name: "suggest  - the AI proposes, you approve each one",
+                value: "suggest" as const,
+              },
+              {
+                name: "manual   - nothing is saved unless you ask for it",
+                value: "manual" as const,
+              },
+            ],
+          });
+        }
       }
-      if (!opts.mode) {
-        mode = await select({
-          message: "How should memories get saved?",
-          default: mode,
-          choices: [
-            {
-              name: "auto     - the AI saves as it learns, always private (recommended)",
-              value: "auto" as const,
-            },
-            {
-              name: "suggest  - the AI proposes, you approve each one",
-              value: "suggest" as const,
-            },
-            {
-              name: "manual   - nothing is saved unless you ask for it",
-              value: "manual" as const,
-            },
-          ],
-        });
+
+      const config = await s.init({ displayName: displayName.trim() || "anonymous", mode });
+
+      // Some clients never forward the server's instructions to the model, so
+      // capture silently does not happen. Writing them into the file the tool
+      // reads every session is the one channel that always arrives -- and a
+      // step nobody performed while it was a suggestion buried in `stats`.
+      const added: string[] = [];
+      const alreadyThere: string[] = [];
+      let anyFound = false;
+
+      if (opts.appendInstructions) {
+        for (const file of instructionTargets()) {
+          if (!existsSync(file)) continue;
+          anyFound = true;
+          if ((await appendInstructionsToFile(file)) === "added") added.push(file);
+          else alreadyThere.push(file);
+        }
       }
-    }
 
-    const config = await s.init({ displayName: displayName.trim() || "anonymous", mode });
+      console.log();
+      console.log(ok(existed ? `Updated ${c.bold(s.root)}` : `Created ${c.bold(s.root)}`));
+      console.log(info(`display name: ${c.bold(config.displayName)}`));
+      console.log(info(`mode:         ${c.bold(config.mode)}`));
+      console.log(info(`PII guard:    ${config.autoRedactPII ? "on" : "off"}`));
 
-    console.log();
-    console.log(ok(existed ? `Updated ${c.bold(s.root)}` : `Created ${c.bold(s.root)}`));
-    console.log(info(`display name: ${c.bold(config.displayName)}`));
-    console.log(info(`mode:         ${c.bold(config.mode)}`));
-    console.log(info(`PII guard:    ${config.autoRedactPII ? "on" : "off"}`));
-    console.log();
-    console.log(heading("Next:"));
-    console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
-    console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
-    console.log();
-  });
+      console.log();
+      if (!opts.appendInstructions) {
+        console.log(
+          info(
+            `Left your instruction files alone. Add them later with ${c.bold("memshare instructions --append <file>")}.`,
+          ),
+        );
+      } else if (!anyFound) {
+        console.log(
+          warn(
+            "No CLAUDE.md/AGENTS.md found. Run 'memshare instructions --append <file>' once you have one.",
+          ),
+        );
+      } else {
+        for (const file of added) console.log(ok(`Told your assistant about it in ${c.bold(file)}`));
+        for (const file of alreadyThere) console.log(info(`${file} already says so.`));
+        if (added.length > 0) console.log(info("Restart your assistant for it to pick that up."));
+      }
+
+      console.log();
+      console.log(heading("Next:"));
+      console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
+      console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
+      console.log();
+    },
+  );
 
 // ---------------------------------------------------------------- add
 
@@ -432,68 +497,48 @@ program
       return;
     }
 
-    const days = Math.max(1, opts.days);
-    const since = Date.now() - days * 86_400_000;
-    const recent = items.filter((i) => Date.parse(i.createdAt) >= since);
+    // The same arithmetic memory_stats returns as JSON; this end draws it.
+    const stats = computeStats(items, { days: opts.days });
+    const { days, bySource, byVisibility } = stats;
 
     // A sparkline of the last `days` days makes a stalled capture obvious in
     // a way a total never does.
-    const perDay = new Map<string, number>();
-    for (let d = days - 1; d >= 0; d -= 1) {
-      perDay.set(new Date(Date.now() - d * 86_400_000).toISOString().slice(0, 10), 0);
-    }
-    for (const item of recent) {
-      const day = item.createdAt.slice(0, 10);
-      if (perDay.has(day)) perDay.set(day, (perDay.get(day) ?? 0) + 1);
-    }
-    const counts = [...perDay.values()];
+    const counts = stats.perDay.map((d) => d.count);
     const peak = Math.max(1, ...counts);
     const blocks = " ▁▂▃▄▅▆▇█";
     const spark = counts
       .map((n) => blocks[n === 0 ? 0 : Math.max(1, Math.round((n / peak) * 8))])
       .join("");
 
-    const tally = (key: (i: MemoryItem) => string[]): Array<[string, number]> => {
-      const counts2 = new Map<string, number>();
-      for (const item of items) {
-        for (const k of key(item)) counts2.set(k, (counts2.get(k) ?? 0) + 1);
-      }
-      return [...counts2.entries()].sort((a, b) => b[1] - a[1]);
-    };
-
-    const shareable = items.filter((i) => i.visibility === "shareable").length;
-    const imported = items.filter((i) => i.confidence === "imported").length;
-    const captured = items.filter((i) => i.source.tool !== "cli").length;
-
     console.log();
-    console.log(heading(`${items.length} memories, ${recent.length} in the last ${days} days`));
+    console.log(heading(`${stats.total} memories, ${stats.recent} in the last ${days} days`));
     console.log();
     console.log(`  ${c.green(spark)}  ${c.dim(`${days}d ago → today`)}`);
     console.log();
     console.log(
       info(
-        `${captured} captured by an assistant, ${items.length - captured - imported} added by hand` +
-          (imported > 0 ? `, ${imported} imported from someone else` : ""),
+        `${bySource.capturedByAssistant} captured by an assistant, ${bySource.addedByHand} added by hand` +
+          (bySource.imported > 0 ? `, ${bySource.imported} imported from someone else` : ""),
       ),
     );
-    console.log(info(`${shareable} shareable, ${items.length - shareable} private`));
+    console.log(info(`${byVisibility.shareable} shareable, ${byVisibility.private} private`));
 
-    const tools = tally((i) => [i.source.tool]).slice(0, 5);
+    const tools = stats.tools.slice(0, 5);
     if (tools.length > 0) {
       console.log();
       console.log(heading("Where they came from"));
-      for (const [tool, n] of tools) console.log(`  ${String(n).padStart(4)}  ${tool}`);
+      for (const { tool, count } of tools) console.log(`  ${String(count).padStart(4)}  ${tool}`);
     }
 
-    const tags = tally((i) => i.tags).slice(0, 8);
+    const tags = stats.tags.slice(0, 8);
     if (tags.length > 0) {
       console.log();
       console.log(heading("Most common tags"));
-      for (const [tag, n] of tags) console.log(`  ${String(n).padStart(4)}  ${c.cyan(tag)}`);
+      for (const { tag, count } of tags) console.log(`  ${String(count).padStart(4)}  ${c.cyan(tag)}`);
     }
 
     console.log();
-    if (recent.length === 0) {
+    if (stats.recent === 0) {
       console.log(
         warn(
           `Nothing new in ${days} days. If you have been working, capture is not firing — ` +
@@ -945,29 +990,20 @@ function printPlan(plan: ImportPlan): void {
 program
   .command("instructions")
   .description("print standing instructions to paste into CLAUDE.md / AGENTS.md")
-  .option("--append <file>", "append them to that file instead of printing")
+  .option("--append <file>", "append them to that file instead of printing (creates it if missing)")
   .action(async (opts: { append?: string }) => {
     if (!opts.append) {
       console.log(ASSISTANT_INSTRUCTIONS);
       return;
     }
 
+    // Unlike `init`, this one is explicit about a named file, so it creates
+    // the file if it is not there yet.
     const file = expandHome(opts.append);
-    let existing = "";
-    try {
-      existing = await fs.readFile(file, "utf8");
-    } catch (err) {
-      if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
-    }
-
-    if (existing.includes(INSTRUCTIONS_MARKER)) {
+    if ((await appendInstructionsToFile(file)) === "already-present") {
       console.log(info(`${file} already has them. Nothing changed.`));
       return;
     }
-
-    await fs.mkdir(path.dirname(file), { recursive: true });
-    const separator = existing === "" || existing.endsWith("\n\n") ? "" : existing.endsWith("\n") ? "\n" : "\n\n";
-    await fs.appendFile(file, `${separator}${ASSISTANT_INSTRUCTIONS}`, "utf8");
     console.log(ok(`Added them to ${c.bold(file)}`));
     console.log(info("Restart your assistant for it to pick them up."));
   });
