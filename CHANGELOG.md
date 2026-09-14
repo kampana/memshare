@@ -285,3 +285,17 @@ imported, which used to make "added by hand" go negative.
 **`memory_get` browses as well as recalls.** It takes the `visibility` and
 `from` filters `memshare list` has always had, rather than gaining a second
 listing tool that would drift from the first.
+
+**New: `memory_preview`.** Looking inside a bundle someone sent used to mean
+calling `memory_import`, whose preview is the first half of importing. There
+was no way to answer "what did Dana send me?" without the next step being an
+import, so the question and the act were the same call. `memory_preview` reads
+and nothing else — no `confirmed` argument exists on it. Both it and
+`memory_import`'s first call render one plan through one renderer, so the two
+previews cannot drift.
+
+**An imported memory is a memory you now have.** `memory_import` wrote
+straight into the store, so the "every save is a save here too" rule never
+fired for it: the facts landed in memshare and the assistant's own notes never
+heard about them. It now returns each item's text, not just a count, and says
+the rule runs in both directions.

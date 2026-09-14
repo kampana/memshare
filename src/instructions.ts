@@ -35,7 +35,10 @@ long-term memory of me and my work.
   any other memory or notes system you maintain — triggered by any phrasing
   ("remember", "note", "keep in mind", or none at all) — also call
   \`memory_set\` for the same fact here, every time. Treat it as one write
-  with two destinations, not two independent decisions.
+  with two destinations, not two independent decisions. It runs the other way
+  too: when \`memory_import\` takes in memories someone sent me, write those
+  into your own memory as well — they are things you now know about my work,
+  and arriving in a bundle rather than in conversation changes nothing.
 - **Not worth saving:** anything already visible in the current file or
   diff, transient task state, or anything I'll have forgotten by tomorrow.
 - **Choose visibility every time.** \`shareable\` for facts about the
@@ -47,6 +50,9 @@ long-term memory of me and my work.
 - **Reuse tags.** Call \`memory_list_tags\` and reuse what is already there
   rather than inventing near-duplicates. Don't add a tag for the project or
   repository — that one is added automatically.
+- **Looking is free.** To answer "what did someone send me?", call
+  \`memory_preview\` — it reads a bundle and stores nothing. Reach for
+  \`memory_import\` only once I have said I want some of it.
 - **Promoting is mine to ask for.** Only call \`memory_set_visibility\` when
   I actually ask you to. Never decide on your own that something should
   become shareable.

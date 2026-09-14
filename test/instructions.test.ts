@@ -22,6 +22,7 @@ describe("assistant instructions", () => {
       "memory_list_tags",
       "memory_set_visibility",
       "memory_forget",
+      "memory_preview",
     ]) {
       expect(ASSISTANT_INSTRUCTIONS).toContain(tool);
     }
@@ -63,6 +64,11 @@ describe("saving in two places at once", () => {
   it("says a fact written to another memory system is saved here as well", () => {
     expect(ASSISTANT_INSTRUCTIONS).toMatch(/every save is a save here too/i);
     expect(ASSISTANT_INSTRUCTIONS).toMatch(/one write\s+with two destinations/i);
+  });
+
+  it("applies to memories that arrived by import, not just ones learned firsthand", () => {
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/runs the other way\s+too/i);
+    expect(ASSISTANT_INSTRUCTIONS).toMatch(/memory_import/);
   });
 
   it("covers the phrasings that trigger a save elsewhere, including none", () => {

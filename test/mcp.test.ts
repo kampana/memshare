@@ -58,6 +58,7 @@ describe("the tool surface", () => {
       "memory_get",
       "memory_import",
       "memory_list_tags",
+      "memory_preview",
       "memory_set",
       "memory_set_visibility",
       "memory_stats",
@@ -79,7 +80,7 @@ describe("the tool surface", () => {
       destructiveHint: true,
       idempotentHint: true,
     });
-    for (const name of ["memory_get", "memory_stats", "memory_list_tags"]) {
+    for (const name of ["memory_get", "memory_stats", "memory_list_tags", "memory_preview"]) {
       expect(byName.get(name)).toMatchObject({ readOnlyHint: true });
     }
   });
@@ -355,6 +356,103 @@ describe("memory_import", () => {
 
   it("reports a missing file instead of failing the call", async () => {
     const out = await call(bobClient, "memory_import", { file: path.join(bobDir, "nope.json") });
+    expect(out).toMatch(/no such file/i);
+  });
+
+  it("hands back what arrived, so the assistant can mirror it into its own memory", async () => {
+    const out = await call(bobClient, "memory_import", { file: bundleFile, confirmed: true });
+
+    // The count alone is not actionable -- the assistant needs the text.
+    expect(out).toContain("Team chose Postgres for JSONB");
+    expect(out).toContain("Migrations run via scripts/migrate.ts");
+    expect(out).toMatch(/every save is a save here too/i);
+    expect(out).toMatch(/both directions/i);
+  });
+
+  it("says nothing about mirroring when the import was a no-op", async () => {
+    await call(bobClient, "memory_import", { file: bundleFile, confirmed: true });
+    const again = await call(bobClient, "memory_import", { file: bundleFile, confirmed: true });
+    expect(again).toMatch(/nothing new to import/i);
+    expect(again).not.toMatch(/every save is a save here too/i);
+  });
+});
+
+describe("memory_preview", () => {
+  let bobDir: string;
+  let bob: MemoryStore;
+  let bobClient: Client;
+  let bundleFile: string;
+
+  beforeEach(async () => {
+    await store.add({ content: "Team chose Postgres for JSONB", tags: ["px"], visibility: "shareable" });
+    await store.add({ content: "Migrations run via scripts/migrate.ts", tags: ["px"], visibility: "shareable" });
+    await call(client, "memory_export", {
+      tags: ["px"],
+      for: "bob",
+      note: "the two you asked about",
+      confirmed: true,
+    });
+    const [file] = await fs.readdir(store.bundlesDir);
+    bundleFile = path.join(store.bundlesDir, file!);
+
+    bobDir = await fs.mkdtemp(path.join(os.tmpdir(), "memshare-bob-preview-"));
+    bob = new MemoryStore(bobDir);
+    await bob.init({ displayName: "bob", mode: "auto" });
+    bobClient = await connect(bob);
+  });
+
+  afterEach(async () => {
+    await bobClient.close();
+    await fs.rm(bobDir, { recursive: true, force: true });
+  });
+
+  it("shows the sender and every item, and stores none of them", async () => {
+    const out = await call(bobClient, "memory_preview", { file: bundleFile });
+    expect(out).toContain("alice");
+    expect(out).toContain("Team chose Postgres for JSONB");
+    expect(out).toContain("Migrations run via scripts/migrate.ts");
+    expect(await bob.all()).toHaveLength(0);
+  });
+
+  it("passes the sender's note along", async () => {
+    const out = await call(bobClient, "memory_preview", { file: bundleFile });
+    expect(out).toContain("the two you asked about");
+  });
+
+  it("has no argument that could make it write", async () => {
+    const { tools } = await bobClient.listTools();
+    const preview = tools.find((t) => t.name === "memory_preview")!;
+    const schema = preview.inputSchema as { properties?: Record<string, unknown> };
+    expect(Object.keys(schema.properties ?? {})).toEqual(["file"]);
+  });
+
+  it("flags what the recipient already knows, exactly as the import preview does", async () => {
+    await bob.add({ content: "Team chose Postgres for JSONB", visibility: "private" });
+
+    const preview = await call(bobClient, "memory_preview", { file: bundleFile });
+    const importPreview = await call(bobClient, "memory_import", { file: bundleFile });
+
+    expect(preview).toMatch(/already known/i);
+    // One plan, one renderer: the item lines must not drift apart.
+    for (const line of ["Team chose Postgres for JSONB  (already known)"]) {
+      expect(preview).toContain(line);
+      expect(importPreview).toContain(line);
+    }
+  });
+
+  it("refuses a bundle that was edited in transit, without importing anything", async () => {
+    const raw = JSON.parse(await fs.readFile(bundleFile, "utf8"));
+    raw.items[0].content = "Team chose a database I control";
+    await fs.writeFile(bundleFile, JSON.stringify(raw), "utf8");
+
+    const out = await call(bobClient, "memory_preview", { file: bundleFile });
+    expect(out).toMatch(/cannot use this bundle/i);
+    expect(out).toMatch(/modified after export/i);
+    expect(await bob.all()).toHaveLength(0);
+  });
+
+  it("reports a missing file instead of failing the call", async () => {
+    const out = await call(bobClient, "memory_preview", { file: path.join(bobDir, "nope.json") });
     expect(out).toMatch(/no such file/i);
   });
 });

@@ -47,7 +47,7 @@ After setup, capture and recall happen in conversation — there is no command t
 >
 > *"forget what you know about the old auth flow"* → the AI shows you what matched, then calls `memory_forget`
 
-Sharing works the same way. Ask to send something and you are shown the exact list — including anything held back for containing personal data — before a file is written. Ask to take something in and you see every item first. **The approval moves into the conversation rather than disappearing from it.** The CLI does all of this too, for scripting and for people who prefer it.
+Sharing works the same way. Ask to send something and you are shown the exact list — including anything held back for containing personal data — before a file is written. Ask what someone sent you and you get the contents without taking any of it; ask to take it in and you see every item first. **The approval moves into the conversation rather than disappearing from it.** The CLI does all of this too, for scripting and for people who prefer it.
 
 Promoting happens either way — in conversation, or at a prompt:
 
@@ -212,7 +212,7 @@ It does **not** delete the bundle file, and it is **cooperative, not enforced**:
 
 ## MCP tools
 
-The server exposes nine tools to any MCP client:
+The server exposes ten tools to any MCP client:
 
 | Tool | What it does |
 |---|---|
@@ -223,10 +223,11 @@ The server exposes nine tools to any MCP client:
 | `memory_forget` | Delete memories by id. Only when the user asks — deletion is irreversible. |
 | `memory_stats` | Counts, as JSON: per day, per tool, per tag, and the shareable/private split. |
 | `memory_export` | Prepare a bundle to send someone. Previews first, writes only on confirmation. |
+| `memory_preview` | Look inside a bundle someone sent, storing nothing. No argument can make it write. |
 | `memory_import` | Take in a bundle someone sent. Previews first, imports only on confirmation. |
 | `memory_list_tags` | List every tag, so the model reuses tags instead of inventing near-duplicates. |
 
-`memory_get` is the browse tool as well as the recall tool: it takes the same filters `memshare list` does, so "what have you marked shareable?" and "what did Cursor save?" are answered without a second tool that could drift from the first. `memory_forget` is the one destructive tool in the set, and it is annotated as such — the assistant is told to call it only on an explicit request, never on its own judgement that a memory looks stale or wrong.
+`memory_preview` and `memory_import`'s first call render the same plan through the same code — the difference is that preview is not the first half of anything, so "what did Dana send me?" can be answered without the next step being an import. `memory_get` is the browse tool as well as the recall tool: it takes the same filters `memshare list` does, so "what have you marked shareable?" and "what did Cursor save?" are answered without a second tool that could drift from the first. `memory_forget` is the one destructive tool in the set, and it is annotated as such — the assistant is told to call it only on an explicit request, never on its own judgement that a memory looks stale or wrong.
 
 ## CLI reference
 
