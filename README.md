@@ -31,6 +31,8 @@ claude mcp add memshare -- npx -y memshare-mcp serve
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
 
+`memshare init` also writes standing instructions into whichever of `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` already exist — the files your assistant reads at the start of every session. Nothing in MCP can make a model call a tool, and some clients never pass the server's own instructions to the model at all, so that file is the one channel that always arrives. It creates none of those files, it never appends twice, and `memshare init --no-append-instructions` skips it entirely.
+
 > **Asking an AI assistant to install this for you?** Say "install `memshare-mcp` from github.com/kampana/memshare" — not just "install memshare." The plain name `memshare` is a different, unpublished package on npm, and a search for it can surface unrelated results. The command above is the one that actually works.
 
 ## You mostly talk, not type
@@ -42,6 +44,8 @@ After setup, capture and recall happen in conversation — there is no command t
 > *"what do you know about this project?"* → the AI calls `memory_get`
 >
 > *"remember that I like dark mode"* → the AI calls `memory_set`
+>
+> *"forget what you know about the old auth flow"* → the AI shows you what matched, then calls `memory_forget`
 
 Sharing works the same way. Ask to send something and you are shown the exact list — including anything held back for containing personal data — before a file is written. Ask to take something in and you see every item first. **The approval moves into the conversation rather than disappearing from it.** The CLI does all of this too, for scripting and for people who prefer it.
 
@@ -96,16 +100,17 @@ A flat line there means capture is not firing, and you know within days rather t
 
 ## If nothing is being captured
 
-memshare can offer memory, but nothing in MCP can make a model *use* it. The server asks the assistant to save as it learns — in its handshake and in every tool description — but some clients never pass server instructions to the model at all.
+memshare can offer memory, but nothing in MCP can make a model *use* it. The server asks the assistant to save as it learns — in its handshake and in every tool description — but some clients never pass server instructions to the model at all. That is why `memshare init` also writes the same request into the files your assistant reads every session.
 
-If `memshare list` is still empty after a few days of real work, say it once more in the file your tool reads every session:
+If `memshare list` is still empty after a few days of real work, the likely reason is that the file it needed did not exist when you ran `init`, or your tool reads a different one. Say it there by hand:
 
 ```bash
 memshare instructions --append ~/.claude/CLAUDE.md    # Claude Code
 memshare instructions --append ./AGENTS.md            # Cursor, Windsurf, Copilot
+memshare instructions --append ./.cursorrules         # Cursor, older versions
 ```
 
-Safe to run twice — it checks before appending.
+Safe to run twice — it checks before appending — and it creates the file if it is not there yet. Then restart your assistant, since these files are read once per session.
 
 ## Try it in a sandbox first
 
@@ -117,7 +122,7 @@ cd memshare && npm install && npm run build
 bash examples/try-it.sh
 ```
 
-This does install the project's dependencies locally, in the folder you cloned. What it does **not** do: install anything globally, create or modify `~/.memshare`, or add anything to your Claude config. It builds two fake stores under a temp directory and deletes cleanly. Nothing carries over to a real setup.
+This does install the project's dependencies locally, in the folder you cloned. What it does **not** do: install anything globally, create or modify `~/.memshare`, or add anything to your Claude config — including the `CLAUDE.md` and `AGENTS.md` a real `memshare init` appends to, which the script opts out of. It builds two fake stores under a temp directory and deletes cleanly. Nothing carries over to a real setup.
 
 ## Sharing with someone else
 
@@ -207,23 +212,27 @@ It does **not** delete the bundle file, and it is **cooperative, not enforced**:
 
 ## MCP tools
 
-The server exposes seven tools to any MCP client:
+The server exposes nine tools to any MCP client:
 
 | Tool | What it does |
 |---|---|
 | `memory_set` | Save one durable fact, choosing `private` or `shareable` for it. Routed to the approval queue in `suggest` mode. |
-| `memory_get` | Recall memories by free text, tags, or most-recent. |
+| `memory_get` | Recall or browse memories — free text, tags, `visibility`, the tool that wrote them, or most-recent. |
 | `memory_suggest` | Propose memories for the user to approve later. |
 | `memory_set_visibility` | Mark memories shareable or private, when the user asks. |
+| `memory_forget` | Delete memories by id. Only when the user asks — deletion is irreversible. |
+| `memory_stats` | Counts, as JSON: per day, per tool, per tag, and the shareable/private split. |
 | `memory_export` | Prepare a bundle to send someone. Previews first, writes only on confirmation. |
 | `memory_import` | Take in a bundle someone sent. Previews first, imports only on confirmation. |
 | `memory_list_tags` | List every tag, so the model reuses tags instead of inventing near-duplicates. |
+
+`memory_get` is the browse tool as well as the recall tool: it takes the same filters `memshare list` does, so "what have you marked shareable?" and "what did Cursor save?" are answered without a second tool that could drift from the first. `memory_forget` is the one destructive tool in the set, and it is annotated as such — the assistant is told to call it only on an explicit request, never on its own judgement that a memory looks stale or wrong.
 
 ## CLI reference
 
 | Command | |
 |---|---|
-| `memshare init` | Create the store. `--name`, `--mode`, `--yes` |
+| `memshare init` | Create the store, and tell your assistant about it. `--name`, `--mode`, `--yes`, `--no-append-instructions` |
 | `memshare add <text>` | Add a memory. `--tags`, `--visibility`, `--expires`, `--tool` |
 | `memshare list` | Show the store. `--tags`, `--visibility`, `--query`, `--from`, `--limit`, `--json`, `--all` |
 
@@ -240,7 +249,7 @@ The server exposes seven tools to any MCP client:
 | `memshare forget <ids...>` | Delete memories |
 | `memshare prune` | Delete expired memories |
 | `memshare config` | Show or change settings. `--set key=value` |
-| `memshare instructions` | Print standing instructions for your assistant. `--append <file>` |
+| `memshare instructions` | Print standing instructions for your assistant. `--append <file>` appends them to a file `init` did not find |
 | `memshare serve` | Run the MCP server on stdio |
 
 `--dir <path>` or `MEMSHARE_DIR` points any command at a different store — handy for keeping a separate memory profile per client, or for trying the sharing flow with yourself:

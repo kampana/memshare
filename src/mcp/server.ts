@@ -6,7 +6,8 @@ import { z } from "zod";
 
 import { detectProjectTag } from "../memory/project.js";
 import { summarisePII } from "../memory/redact.js";
-import { MemoryStore, expandHome, parseDuration } from "../memory/store.js";
+import { computeStats } from "../memory/stats.js";
+import { MemoryStore, expandHome, parseDuration, shortId } from "../memory/store.js";
 import { Visibility, type Mode } from "../memory/types.js";
 import { readBundleFile, writeBundleFile } from "../sharing/bundle.js";
 import { buildExportBundle, selectForExport } from "../sharing/export.js";
@@ -23,7 +24,9 @@ import { applyImport, planImport, senderTag } from "../sharing/import.js";
 const MODE_NOTES: Record<Mode, string> = {
   auto:
     "Store mode is AUTO: call memory_set yourself, as soon as a durable fact appears. " +
-    "Do not wait to be asked, and do not batch it to the end of the conversation.",
+    "Do not wait to be asked, and do not batch it to the end of the conversation. " +
+    "That includes facts you are also writing to another memory or notes system you " +
+    "maintain: one write, two destinations, not two independent decisions.",
   suggest:
     "Store mode is SUGGEST (the default): propose memories with memory_suggest instead of saving them. " +
     "The user reviews them later with `memshare review`. If you call memory_set anyway, it is queued as a suggestion, not saved.",
@@ -54,7 +57,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.5.0" },
+    { name: "memshare", version: "0.6.0" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -87,6 +90,10 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         "\"Prefers TypeScript with strict mode over plain JavaScript.\"\n" +
         "Not worth saving: anything already visible in the current file or diff, transient task " +
         "state, or secrets, credentials, health details and financial details.\n\n" +
+        "Save here even if the fact is already captured in another memory or notes system you " +
+        "maintain (e.g. a CLAUDE.md-based memory). memshare is a separate, portable store other " +
+        "AI tools and machines rely on -- it is not a mirror of your own memory, so 'already " +
+        "saved elsewhere' is not a reason to skip this call.\n\n" +
         "One fact per call, written as a standalone sentence that makes sense with no other " +
         "context. " +
         modeNote,
@@ -144,18 +151,32 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       title: "Recall memories",
       description:
         "Look up what is already known about the user. Call this early in a conversation, and again when " +
-        "the topic shifts. With no arguments it returns the most recent memories; a query or tags narrow it down.",
+        "the topic shifts. With no arguments it returns the most recent memories; a query or tags narrow it down.\n\n" +
+        "This is also how you browse the store: `visibility` and `from` list by category rather than by " +
+        "topic -- \"what is marked shareable?\", \"what did Cursor save?\" -- and every filter combines.",
       inputSchema: {
         query: z.string().optional().describe("Free-text substring match over content and tags."),
         tags: z.array(z.string()).optional().describe("Return items carrying any of these tags."),
+        visibility: Visibility.optional().describe(
+          "Only 'shareable' items, or only 'private' ones. Omit for both.",
+        ),
+        from: z
+          .string()
+          .optional()
+          .describe(
+            "Only items written by this tool, as named in its MCP handshake -- 'claude-code', " +
+              "'cursor-vscode'. Memories the user typed themselves are 'cli'.",
+          ),
         limit: z.number().int().positive().max(200).optional().describe("Maximum items (default 20)."),
       },
       annotations: { readOnlyHint: true },
     },
-    async ({ query, tags, limit }) => {
+    async ({ query, tags, visibility, from, limit }) => {
       const items = await store.list({
         ...(query ? { query } : {}),
         ...(tags && tags.length > 0 ? { tags } : {}),
+        ...(visibility ? { visibility } : {}),
+        ...(from ? { tool: from } : {}),
         limit: limit ?? 20,
       });
       if (items.length === 0) return text("No memories matched.");
@@ -257,6 +278,58 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
             ? "They are still on this machine only. Sharing them takes an explicit `memshare export`, which the user runs and approves."
             : "They can no longer be included in any export."),
       );
+    },
+  );
+
+  server.registerTool(
+    "memory_forget",
+    {
+      title: "Delete memories",
+      description:
+        "Permanently delete memories by id. The file is unlinked; there is no undo, no trash, and no " +
+        "way to recover the text afterwards.\n\n" +
+        "Only call this when the user explicitly asks for it -- \"forget that\", \"delete the note about " +
+        "the old auth flow\". Never on your own initiative: not to tidy up, not because a memory looks " +
+        "stale, wrong or duplicated, and not as a fix for something you saved by mistake. Tell the user " +
+        "what is there and let them decide.\n\n" +
+        "If the user describes what to forget rather than naming an id, call memory_get first, show them " +
+        "what matched, and delete only what they confirm.\n\n" +
+        "Accepts the full id or the short form `memshare list` prints.",
+      inputSchema: {
+        ids: z
+          .array(z.string())
+          .min(1)
+          .describe("Memory ids to delete, full or short, as returned by memory_get."),
+      },
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
+    },
+    async ({ ids }) => {
+      const all = await store.all();
+      const deleted: string[] = [];
+      const missing: string[] = [];
+
+      for (const given of ids) {
+        const match = all.find((i) => i.id === given || shortId(i.id) === given);
+        if (!match || !(await store.remove(match.id))) {
+          missing.push(given);
+          continue;
+        }
+        deleted.push(`- ${match.content}  (id: ${match.id})`);
+      }
+
+      const parts: string[] = [];
+      parts.push(
+        deleted.length === 0
+          ? "Nothing deleted."
+          : `Deleted ${deleted.length} memory(s), permanently:\n${deleted.join("\n")}`,
+      );
+      if (missing.length > 0) {
+        parts.push(
+          `No memory matched: ${missing.join(", ")}. Nothing was deleted for those -- ` +
+            "call memory_get to find the right id rather than guessing again.",
+        );
+      }
+      return text(parts.join("\n\n"));
     },
   );
 
@@ -435,6 +508,67 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         `Imported ${applied.imported.length} memory(s) from ${from}, stored private and tagged ` +
           `${senderTag(from)}. Nothing the user already had was changed.`,
       );
+    },
+  );
+
+  server.registerTool(
+    "memory_stats",
+    {
+      title: "Is the store actually being written to?",
+      description:
+        "Counts, not memories: how much is stored, how much of it is recent, and where it came from.\n\n" +
+        "Useful when the user asks what you have been saving, or doubts anything is being saved at all. " +
+        "A `recent` of 0 after real work means capture is not firing -- the fix is " +
+        "`memshare instructions --append <the file your client reads each session>`.\n\n" +
+        "Returns structured JSON. Expired items are counted too; they are still on disk until " +
+        "`memshare prune` runs.",
+      inputSchema: {
+        days: z
+          .number()
+          .int()
+          .positive()
+          .max(365)
+          .optional()
+          .describe("How far back `recent` and `perDay` look. Default 14."),
+      },
+      outputSchema: {
+        days: z.number().int(),
+        total: z.number().int(),
+        recent: z.number().int(),
+        perDay: z.array(z.object({ date: z.string(), count: z.number().int() })),
+        bySource: z.object({
+          capturedByAssistant: z.number().int(),
+          addedByHand: z.number().int(),
+          imported: z.number().int(),
+        }),
+        byVisibility: z.object({ shareable: z.number().int(), private: z.number().int() }),
+        topTools: z.array(z.object({ tool: z.string(), count: z.number().int() })),
+        topTags: z.array(z.object({ tag: z.string(), count: z.number().int() })),
+        pendingSuggestions: z.number().int(),
+      },
+      annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
+    },
+    async ({ days }) => {
+      const items = await store.list({ includeExpired: true });
+      const stats = computeStats(items, { ...(days !== undefined ? { days } : {}) });
+      const pending = await store.readSuggestions();
+
+      const structured = {
+        days: stats.days,
+        total: stats.total,
+        recent: stats.recent,
+        perDay: stats.perDay,
+        bySource: stats.bySource,
+        byVisibility: stats.byVisibility,
+        topTools: stats.tools.slice(0, 5),
+        topTags: stats.tags.slice(0, 8),
+        pendingSuggestions: pending.length,
+      };
+
+      return {
+        content: [{ type: "text" as const, text: JSON.stringify(structured, null, 2) }],
+        structuredContent: structured,
+      };
     },
   );
 

@@ -35,6 +35,15 @@ export function expandHome(p: string): string {
   return path.resolve(p);
 }
 
+/**
+ * The short form of an id, as `memshare list` prints it. It lives here rather
+ * than in the CLI's renderer because both adapters accept it as input: the
+ * `forget` command and the memory_forget tool both match on it.
+ */
+export function shortId(id: string): string {
+  return id.replace(/-/g, "").slice(0, 8);
+}
+
 /** Stable identity for a memory's text, used to dedup on import. */
 export function contentKey(content: string): string {
   const normalised = content.trim().replace(/\s+/g, " ").toLowerCase();

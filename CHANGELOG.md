@@ -249,3 +249,39 @@ session as it wraps up and save anything durable it passed over in the moment.
 
 Both go through the two channels that reach the model: the MCP server's
 instructions, and `memshare instructions` for clients that drop them.
+
+## 0.6.0
+
+Three ways the store quietly stayed empty, or stayed behind.
+
+**A save you already made elsewhere is still a save here.** An assistant that
+keeps its own notes — a CLAUDE.md-style memory — would write a fact there and
+treat memshare as a mirror it had already updated, so "remember this" went to
+one store and not the other. `memory_set` now says outright that "already
+saved elsewhere" is not a reason to skip the call, and the standing
+instructions make it one write with two destinations rather than two
+independent decisions.
+
+**`memshare init` wires up the instructions again.** It appends them to
+whichever of `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` already
+exist, and says which ones it touched. 0.3.2 took this out of `init` on the
+grounds that it was an optional step in the critical path. That was right
+about the step and wrong about who would perform it: some clients never pass
+the server's instructions to the model, and nobody ran the fallback command
+because nothing told them capture had failed. It creates no files, never
+appends twice, and `--no-append-instructions` opts out.
+
+**New: `memory_forget`.** Deleting was CLI-only, so "forget that" in
+conversation did nothing. It is the one destructive tool in the set, annotated
+as such, and the assistant is told to call it only when asked outright —
+never on its own judgement that a memory looks stale.
+
+**New: `memory_stats`**, the same counts `memshare stats` draws, as JSON:
+per-day, per-tool, per-tag, the shareable/private split, and how much was
+captured rather than typed. Both ends now share one `computeStats`, so they
+cannot drift — and an imported memory is no longer counted as captured *and*
+imported, which used to make "added by hand" go negative.
+
+**`memory_get` browses as well as recalls.** It takes the `visibility` and
+`from` filters `memshare list` has always had, rather than gaining a second
+listing tool that would drift from the first.
