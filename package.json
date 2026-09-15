@@ -41,7 +41,8 @@
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "prepublishOnly": "npm run build && npm test && npm run check:docs",
-    "check:docs": "node scripts/check-docs.mjs"
+    "check:docs": "node scripts/check-docs.mjs",
+    "e2e": "node test/e2e/flow.mjs"
   },
   "dependencies": {
     "@inquirer/prompts": "^8.7.2",
