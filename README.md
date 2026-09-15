@@ -1,6 +1,6 @@
 # memshare
 
-**Peer-to-peer AI memory sharing between users — approved on both sides, with no vendor lock-in.**
+**Peer-to-peer AI memory sharing — approved on both sides. No vendor lock-in.**
 
 [![npm](https://img.shields.io/npm/v/memshare-mcp.svg)](https://www.npmjs.com/package/memshare-mcp)
 [![CI](https://github.com/kampana/memshare/actions/workflows/ci.yml/badge.svg)](https://github.com/kampana/memshare/actions/workflows/ci.yml)
