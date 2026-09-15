@@ -174,6 +174,26 @@ describe("memory_get filters", () => {
     expect(out).toContain("Typed this one myself");
     expect(out).not.toContain("dark mode");
   });
+
+  // memory_get is how a query actually arrives -- an assistant searching by
+  // topic, several words at once. It used to match the whole string as one
+  // substring and so returned nothing at all.
+  it("matches any word of a multi-word query", async () => {
+    const out = await call(client, "memory_get", { query: "postgres redis kafka" });
+    expect(out).toContain("Team chose Postgres");
+  });
+
+  it("unions the matches across the words of a query", async () => {
+    const out = await call(client, "memory_get", { query: "postgres prefs" });
+    expect(out).toContain("Team chose Postgres");
+    expect(out).toContain("dark mode");
+    expect(out).toContain("Typed this one myself");
+  });
+
+  it("still says nothing matched when no word hits", async () => {
+    const out = await call(client, "memory_get", { query: "redis kafka" });
+    expect(out).toContain("No memories matched.");
+  });
 });
 
 describe("memory_stats", () => {
