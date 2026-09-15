@@ -7,7 +7,7 @@
  *      registers (or is listed below as deliberately future-facing);
  *   2. every install and npx line names the real npm package;
  *   3. the version is the same in package.json, the CLI and the MCP server;
- *   4. the deck's roadmap marks the version that is actually shipped.
+ *   4. the deck names no version and links to npm, which is always current.
  *
  * It cannot tell you whether a sentence describing behaviour is still true.
  * That has drifted before and only reading catches it.
@@ -138,22 +138,27 @@ for (const [file, version] of Object.entries(versions)) {
 
 // ---------------------------------------------------------------- roadmap
 //
-// The deck's roadmap card marked "shipped" has to name the version that is
-// actually shipped, and no later stage may reuse that number. This drifted
-// twice before the stages stopped carrying version numbers at all.
+// The deck used to name the shipped version, and this check made sure it named
+// the right one. It went stale anyway: the number sits three commits away from
+// the one that changes it, and the deck is the thing nobody rebuilds. So the
+// deck now carries no version at all and links to npm, which always shows the
+// real current one. This check enforces that shape instead.
 
 const deck = read("docs/pitch.html");
-const shippedCard = deck.match(/v(\d+\.\d+)\s*·\s*shipped/);
 const currentMinor = pkg.version.split(".").slice(0, 2).join(".");
 
-if (!shippedCard) {
+const deckVersion = deck.match(/v\d+\.\d+/);
+if (deckVersion) {
   problems.push(
-    `docs/pitch.html: no roadmap card marked "vX.Y · shipped". One card must say which version is out.`,
+    `docs/pitch.html: names ${deckVersion[0]}. The deck deliberately carries no version -- ` +
+      `it went stale every release. Link to npm instead, which is always current.`,
   );
-} else if (shippedCard[1] !== currentMinor) {
+}
+
+if (!deck.includes(`npmjs.com/package/${pkgName}`)) {
   problems.push(
-    `docs/pitch.html: the roadmap says v${shippedCard[1]} is shipped, but package.json is ${pkg.version}. ` +
-      `Move the "shipped" marker.`,
+    `docs/pitch.html: no link to npmjs.com/package/${pkgName}. With no version on ` +
+      `the deck, that link is how a reader finds what is current.`,
   );
 }
 
