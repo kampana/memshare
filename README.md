@@ -265,7 +265,7 @@ MEMSHARE_DIR=/tmp/bob memshare import bundle-a3f8c2d1.memshare.json
 Your memories are the same JSON files in all four, so moving between them costs you nothing — no migration, no re-setup, nothing left behind:
 
 - **Local** *(we suggest starting here)* — files on your laptop, MCP as a local process. Sharing: export a file and send it.
-- **Shared folder** — Dropbox, Drive, or a git repo. Sharing: auto-sync through the folder.
+- **Shared folder** *(planned)* — Dropbox, Drive, or a git repo. Sharing: auto-sync through the folder.
 - **Team server** *(planned)* — Docker on your VPS. Sharing: by username.
 - **Hosted** *(planned)* — managed infra, same protocol, zero ops.
 
