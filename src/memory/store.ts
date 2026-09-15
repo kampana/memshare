@@ -62,7 +62,11 @@ export interface AddInput {
 }
 
 export interface ListFilter {
-  /** Case-insensitive substring match against content and tags. */
+  /**
+   * Case-insensitive match against content and tags. A multi-word query
+   * matches an item containing ANY of the words, not the whole phrase --
+   * callers search by topic and one absent word should not empty the result.
+   */
   query?: string;
   /** An item matches when it carries at least one of these tags. */
   tags?: string[];
