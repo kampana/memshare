@@ -144,6 +144,16 @@
     font-family: ui-monospace, 'Fira Code', Menlo, monospace; font-size: .87rem; line-height: 1.75;
     color: var(--text-2);
   }
+  .codeblock { position: relative; }
+  .codeblock pre { padding-right: 86px; }
+  .codeblock button {
+    position: absolute; top: 10px; right: 10px;
+    background: var(--surface-2); border: 1px solid var(--line); color: var(--text-3);
+    cursor: pointer; font-size: .78rem;
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace;
+    padding: 4px 9px; border-radius: 6px;
+  }
+  .codeblock button:hover { color: var(--text); border-color: var(--text-3); }
   pre .c { color: var(--text-3); }
   pre .g { color: var(--green); }
   pre .f { color: var(--accent-light); }
@@ -209,7 +219,7 @@
 
     <div class="install">
       <code id="installCmd">npm install -g memshare-mcp</code>
-      <button onclick="copyInstall(this)">Copy</button>
+      <button onclick="copyCode(this, 'installCmd')">Copy</button>
     </div>
     <p class="note">Works with Claude Code, Cursor, Windsurf, VS Code — anything that speaks MCP.</p>
 
@@ -357,9 +367,12 @@
       Or try the whole flow first in a sandbox that never touches your real store —
       <a href="https://github.com/kampana/memshare#try-it-in-a-sandbox-first">see the repo</a>.
     </p>
-    <pre><span class="g">npm</span> install -g memshare-mcp
+    <div class="codeblock">
+      <pre id="quickstartCmd"><span class="g">npm</span> install -g memshare-mcp
 <span class="g">memshare</span> init
 <span class="g">claude</span> mcp add memshare --scope user -- memshare serve</pre>
+      <button onclick="copyCode(this, 'quickstartCmd')">Copy</button>
+    </div>
     <p class="note">That is the whole setup. Restart your assistant and it can recall and save straight away.</p>
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/kampana/memshare" target="_blank" rel="noopener">★ Star on GitHub</a>
@@ -380,8 +393,8 @@
 </footer>
 
 <script>
-  function copyInstall(btn) {
-    const text = document.getElementById('installCmd').textContent;
+  function copyCode(btn, id) {
+    const text = document.getElementById(id).textContent;
     navigator.clipboard.writeText(text).then(() => {
       btn.textContent = 'Copied';
       setTimeout(() => { btn.textContent = 'Copy'; }, 1600);
