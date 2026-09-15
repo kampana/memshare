@@ -299,3 +299,21 @@ straight into the store, so the "every save is a save here too" rule never
 fired for it: the facts landed in memshare and the assistant's own notes never
 heard about them. It now returns each item's text, not just a count, and says
 the rule runs in both directions.
+
+
+## 0.6.1
+
+**A multi-word query returned nothing.** `memory_get` and `memshare recall` matched the
+whole query string as one literal substring, so any search of two or more
+words — the shape an assistant actually sends, like
+"sidekick-frontend-shared mf-toolbar i18n" — could only match a memory
+containing that exact phrase, and never did. A query is now split on
+whitespace and matches a memory containing **any** of its words. AND would
+have had the same failure in slower motion: one absent word empties the whole
+result set, when the caller wants everything on the topic and will pick what
+matters.
+
+Note this widens `--query` wherever it selects rather than reads — bulk
+visibility changes and export selection. Both still render the same plan for
+approval before they act, so what a broader query caught is visible before
+anything happens to it.

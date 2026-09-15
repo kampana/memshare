@@ -57,7 +57,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   };
 
   const server = new McpServer(
-    { name: "memshare", version: "0.6.0" },
+    { name: "memshare", version: "0.6.1" },
     {
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
@@ -155,7 +155,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         "This is also how you browse the store: `visibility` and `from` list by category rather than by " +
         "topic -- \"what is marked shareable?\", \"what did Cursor save?\" -- and every filter combines.",
       inputSchema: {
-        query: z.string().optional().describe("Free-text substring match over content and tags."),
+        query: z.string().optional().describe("Free text matched against content and tags. A multi-word query returns memories containing ANY of the words, so search broadly by topic and pick what is relevant."),
         tags: z.array(z.string()).optional().describe("Return items carrying any of these tags."),
         visibility: Visibility.optional().describe(
           "Only 'shareable' items, or only 'private' ones. Omit for both.",
@@ -244,7 +244,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         ),
         ids: z.array(z.string()).optional().describe("Memory ids, as returned by memory_get."),
         tags: z.array(z.string()).optional().describe("Every memory carrying any of these tags."),
-        query: z.string().optional().describe("Every memory matching this text."),
+        query: z.string().optional().describe("Every memory matching this text (any word of a multi-word query)."),
       },
       annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true },
     },
@@ -352,7 +352,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
           .array(z.string())
           .optional()
           .describe("Limit to memories carrying any of these tags. Omit to offer everything shareable."),
-        query: z.string().optional().describe("Limit to memories matching this text."),
+        query: z.string().optional().describe("Limit to memories matching this text (any word of a multi-word query)."),
         for: z
           .string()
           .optional()

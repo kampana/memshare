@@ -189,7 +189,7 @@ export class MemoryStore {
   async list(filter: ListFilter = {}): Promise<MemoryItem[]> {
     const now = Date.now();
     const wanted = filter.tags ? normaliseTags(filter.tags) : undefined;
-    const query = filter.query?.trim().toLowerCase();
+    const queryWords = (filter.query?.trim().toLowerCase() ?? "").split(/\s+/).filter(Boolean);
     const tool = filter.tool?.trim().toLowerCase();
 
     let items = await this.all();
@@ -201,9 +201,11 @@ export class MemoryStore {
       if (wanted && wanted.length > 0) {
         if (!item.tags.some((t) => wanted.includes(t.toLowerCase()))) return false;
       }
-      if (query) {
+      if (queryWords.length > 0) {
         const haystack = `${item.content} ${item.tags.join(" ")}`.toLowerCase();
-        if (!haystack.includes(query)) return false;
+        // Any word, not all of them: callers search by topic ("mf-toolbar i18n
+        // translation") and one absent word should not empty the result set.
+        if (!queryWords.some((w) => haystack.includes(w))) return false;
       }
       return true;
     });
