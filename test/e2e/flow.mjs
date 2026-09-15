@@ -356,12 +356,20 @@ async function legFour(bob, token) {
   });
   if (!ranCleanly(res)) return res;
 
+  const gets = callsTo(res, "memory_get");
+  check("memory_get was called before answering", gets.length > 0, `saw: ${res.toolNames.join(", ")}`);
+
+  // The query the model chose is the first thing worth knowing when this leg
+  // fails: a recall bug and a model that simply did not search look identical
+  // from the answer alone.
+  const queries = gets.map((g) => JSON.stringify(g.input.query ?? null)).join(", ");
+  if (gets.length > 0) console.log(`  \x1b[2mqueries: ${queries}\x1b[0m`);
+
   check(
-    "memory_get was called before answering",
-    callsTo(res, "memory_get").length > 0,
-    `saw: ${res.toolNames.join(", ")}`,
+    "the answer contains the imported fact",
+    /mTLS/i.test(res.text),
+    `queries: ${queries}\n          answer: ${res.text.slice(0, 200)}`,
   );
-  check("the answer contains the imported fact", /mTLS/i.test(res.text), res.text.slice(0, 300));
   return res;
 }
 
