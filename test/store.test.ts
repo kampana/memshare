@@ -113,6 +113,25 @@ describe("list", () => {
     expect(await store.list({ query: "financial" })).toHaveLength(1);
   });
 
+  it("matches any word of a multi-word query", async () => {
+    // A topic search: only "postgres" is present, and that is enough.
+    const items = await store.list({ query: "postgres redis cassandra" });
+    expect(items).toHaveLength(1);
+    expect(items[0]!.content).toBe("Project X uses PostgreSQL");
+  });
+
+  it("unions the matches of a multi-word query", async () => {
+    expect(await store.list({ query: "postgres financial" })).toHaveLength(2);
+  });
+
+  it("still returns nothing when no word matches", async () => {
+    expect(await store.list({ query: "redis cassandra" })).toHaveLength(0);
+  });
+
+  it("ignores extra whitespace in a query", async () => {
+    expect(await store.list({ query: "   postgres   " })).toHaveLength(1);
+  });
+
   it("applies the limit", async () => {
     expect(await store.list({ limit: 2 })).toHaveLength(2);
   });

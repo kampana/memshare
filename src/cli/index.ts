@@ -42,7 +42,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.6.0";
+const VERSION = "0.6.1";
 
 const program = new Command();
 
@@ -246,7 +246,7 @@ program
   .description("show what is in your memory store")
   .option("-t, --tags <tags>", "only items with any of these tags", collect, [] as string[])
   .addOption(new Option("--visibility <visibility>", "filter").choices(Visibility.options))
-  .option("-q, --query <text>", "substring match on content and tags")
+  .option("-q, --query <text>", "match any word of this text against content and tags")
   .option("--from <tool>", "only items written by this tool, e.g. claude, chatgpt")
   .option("-n, --limit <n>", "maximum items to show", (v) => Number.parseInt(v, 10))
   .option("--json", "raw JSON output")
@@ -325,7 +325,7 @@ program
   .command("recall")
   .description("print memories as plain text, ready to paste into any AI tool")
   .option("-t, --tags <tags>", "only items with any of these tags", collect, [] as string[])
-  .option("-q, --query <text>", "substring match on content and tags")
+  .option("-q, --query <text>", "match any word of this text against content and tags")
   .option("-n, --limit <n>", "maximum items", (v) => Number.parseInt(v, 10), 30)
   .action(async (opts: { tags: string[]; query?: string; limit: number }) => {
     const s = await requireStore();
@@ -671,7 +671,7 @@ program
   .command("export")
   .description("export shareable memories as a bundle file")
   .option("-t, --tags <tags>", "only items with any of these tags", collect, [] as string[])
-  .option("-q, --query <text>", "substring match on content and tags")
+  .option("-q, --query <text>", "match any word of this text against content and tags")
   .option("--from <tool>", "only items written by this tool, e.g. chatgpt")
   .option("--for <recipient>", "who this bundle is for (recorded in the bundle)")
   .option("--note <text>", "a note for the recipient")
