@@ -205,6 +205,12 @@
 
     /* wrap the long lines instead of hiding them behind a sideways scroll */
     h1 br, .lede br { display: none; }
+
+    /* Content-width buttons wrap into a ragged stack at this width — one wide
+       one, then two narrow ones whose edges line up with nothing. Full width
+       each is the only arrangement that reads as deliberate. */
+    .cta-row { gap: 12px; }
+    .cta-row .btn { flex: 1 0 100%; justify-content: center; }
     pre {
       white-space: pre-wrap; overflow-wrap: anywhere;
       font-size: .8rem; line-height: 1.7; padding: 14px;
@@ -239,7 +245,9 @@
 <header>
   <div class="wrap">
     <span class="tagline">Open source · MIT</span>
-    <h1>Your AI's memory,<br>shareable with <em>people</em>.</h1>
+    <!-- The space after <br> matters: mobile hides the break, and without it
+         the two words run together as "memory,shareable". -->
+    <h1>Your AI's memory,<br> shareable with <em>people</em>.</h1>
     <p class="lede">
       Peer-to-peer AI memory sharing — <strong>approved on both sides</strong>.<br>
       Works in any AI tool. No server, no signup, nothing uploaded.
