@@ -8,6 +8,7 @@ import { detectProjectTag } from "../memory/project.js";
 import { summarisePII } from "../memory/redact.js";
 import { computeStats } from "../memory/stats.js";
 import { MemoryStore, expandHome, parseDuration, shortId } from "../memory/store.js";
+import { computeUsageStats, logUsage, readUsageLog, type UsageEvent } from "../memory/usage.js";
 import { Visibility, type Mode } from "../memory/types.js";
 import { readBundleFile, writeBundleFile } from "../sharing/bundle.js";
 import { buildExportBundle, selectForExport } from "../sharing/export.js";
@@ -54,6 +55,11 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
   const sourceTool = (): string => {
     const name = server.server.getClientVersion()?.name?.trim().toLowerCase();
     return name && name !== "" ? name : "mcp";
+  };
+
+  /** Fire-and-forget usage logging — must never break a tool call. */
+  const log = (event: Omit<UsageEvent, "ts" | "client">): void => {
+    logUsage(store.root, { ...event, ts: new Date().toISOString(), client: sourceTool() });
   };
 
   const server = new McpServer(
@@ -127,6 +133,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       // becomes a suggestion instead of an error.
       if (config.mode === "suggest") {
         const [queued] = await store.addSuggestions([{ content, tags: withProject(tags) }], { tool: sourceTool() });
+        log({ tool: "memory_set", saved: !!queued });
         return text(
           queued
             ? `Queued for the user's approval (suggest mode). It is not saved yet; the user reviews it with \`memshare review\`. id: ${queued.id}`
@@ -141,6 +148,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         confidence: "stated",
         source: { tool: sourceTool() },
       });
+      log({ tool: "memory_set", saved: true });
       return text(`Saved. id: ${item.id}, visibility: ${item.visibility}`);
     },
   );
@@ -179,6 +187,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         ...(from ? { tool: from } : {}),
         limit: limit ?? 20,
       });
+      log({ tool: "memory_get", hits: items.length });
       if (items.length === 0) return text("No memories matched.");
       const lines = items.map(
         (i) =>
@@ -218,6 +227,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         suggestions.map((entry) => ({ ...entry, tags: withProject(entry.tags) })),
         { tool: sourceTool() },
       );
+      log({ tool: "memory_suggest", saved: added.length > 0 });
       const duplicates = suggestions.length - added.length;
       const parts = [`${added.length} suggestion(s) queued for the user's approval.`];
       if (duplicates > 0) parts.push(`${duplicates} skipped (already saved or already pending).`);
@@ -304,6 +314,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true },
     },
     async ({ ids }) => {
+      log({ tool: "memory_forget" });
       const all = await store.all();
       const deleted: string[] = [];
       const missing: string[] = [];
@@ -540,6 +551,19 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         topTools: z.array(z.object({ tool: z.string(), count: z.number().int() })),
         topTags: z.array(z.object({ tag: z.string(), count: z.number().int() })),
         pendingSuggestions: z.number().int(),
+        usage: z.object({
+          days: z.number().int(),
+          totalCalls: z.number().int(),
+          tools: z.record(z.string(),
+            z.object({
+              calls: z.number().int(),
+              successes: z.number().int(),
+              avgHits: z.number().optional(),
+            }),
+          ),
+          perDay: z.array(z.object({ date: z.string(), calls: z.number().int() })),
+          clients: z.array(z.object({ client: z.string(), calls: z.number().int() })),
+        }),
       },
       annotations: { readOnlyHint: true, destructiveHint: false, idempotentHint: true },
     },
@@ -547,6 +571,8 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       const items = await store.list({ includeExpired: true });
       const stats = computeStats(items, { ...(days !== undefined ? { days } : {}) });
       const pending = await store.readSuggestions();
+      const usageEvents = await readUsageLog(store.root);
+      const usage = computeUsageStats(usageEvents, { ...(days !== undefined ? { days } : {}) });
 
       const structured = {
         days: stats.days,
@@ -558,6 +584,7 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
         topTools: stats.tools.slice(0, 5),
         topTags: stats.tags.slice(0, 8),
         pendingSuggestions: pending.length,
+        usage,
       };
 
       return {

@@ -10,6 +10,7 @@ export * from "./instructions.js";
 export * from "./memory/types.js";
 export * from "./memory/store.js";
 export * from "./memory/stats.js";
+export * from "./memory/usage.js";
 export * from "./memory/redact.js";
 export * from "./sharing/bundle.js";
 export * from "./sharing/export.js";

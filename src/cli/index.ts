@@ -9,6 +9,7 @@ import { Command, Option } from "commander";
 import { ASSISTANT_INSTRUCTIONS, appendInstructionsToFile } from "../instructions.js";
 import { summarisePII } from "../memory/redact.js";
 import { computeStats } from "../memory/stats.js";
+import { computeUsageStats, readUsageLog } from "../memory/usage.js";
 import {
   MemoryStore,
   expandHome,
@@ -535,6 +536,54 @@ program
       console.log();
       console.log(heading("Most common tags"));
       for (const { tag, count } of tags) console.log(`  ${String(count).padStart(4)}  ${c.cyan(tag)}`);
+    }
+
+    // ---- Usage (tool call activity) ----
+    const usageEvents = await readUsageLog(s.root);
+    const usage = computeUsageStats(usageEvents, { days: opts.days });
+    if (usage.totalCalls > 0) {
+      console.log();
+      console.log(heading("Tool call activity"));
+
+      // Sparkline of calls per day.
+      const uCounts = usage.perDay.map((d) => d.calls);
+      const uPeak = Math.max(1, ...uCounts);
+      const uSpark = uCounts
+        .map((n) => blocks[n === 0 ? 0 : Math.max(1, Math.round((n / uPeak) * 8))])
+        .join("");
+      console.log(`  ${c.cyan(uSpark)}  ${c.dim(`${days}d ago → today  (${usage.totalCalls} calls)`)}`);
+
+      // Per-tool breakdown: calls, success rate, avg hits.
+      const toolNames = Object.keys(usage.tools);
+      if (toolNames.length > 0) {
+        console.log();
+        for (const name of toolNames) {
+          const t = usage.tools[name]!;
+          const rate = t.calls > 0 ? Math.round((t.successes / t.calls) * 100) : 0;
+          const rateStr = name === "memory_get"
+            ? `${rate}% returned results`
+            : name === "memory_set" || name === "memory_suggest"
+              ? `${rate}% saved`
+              : "";
+          const hitsStr = t.avgHits !== undefined ? `, avg ${t.avgHits} items` : "";
+          console.log(
+            `  ${String(t.calls).padStart(4)}  ${name}` +
+              (rateStr ? `  ${c.dim(`(${rateStr}${hitsStr})`)}` : ""),
+          );
+        }
+      }
+
+      // Per-client breakdown if more than one.
+      if (usage.clients.length > 1) {
+        console.log();
+        console.log(heading("Clients"));
+        for (const { client, calls } of usage.clients) {
+          console.log(`  ${String(calls).padStart(4)}  ${client}`);
+        }
+      }
+    } else {
+      console.log();
+      console.log(info("No tool call activity logged yet. Usage tracking starts with this version."));
     }
 
     console.log();
