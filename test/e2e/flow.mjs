@@ -147,7 +147,8 @@ function ranCleanly(res) {
     check(
       "the session ran",
       false,
-      `exit ${res.exitCode}, ${res.error ?? ""} ${res.stderr.slice(0, 500)}`,
+      `exit ${res.exitCode}, ${res.error ?? ""} ${res.stderr.slice(0, 500)}\n` +
+        `          result: ${JSON.stringify(res.resultEvent ?? null).slice(0, 1200)}`,
     );
   }
 
@@ -224,18 +225,20 @@ async function legOne(alice, token) {
  * is the consent design, so it is asserted directly rather than inferred from
  * the file appearing.
  *
- * The prompt grants consent up front because the gate is deliberately a human
- * one -- told only "share this with bob", the model previews and then stops to
- * ask, which is correct and which a single-shot session can never answer. That
- * does not soften the handshake assertions below: the model is still expected
- * to preview first and only then confirm, and both halves are checked.
+ * Consent is given in a second turn, not smuggled into the first. Told only
+ * "share this with bob" the model previews and stops to ask -- that is the
+ * design working, and an earlier version of this leg tried to talk it out of
+ * that by approving up front in the same sentence. It obeyed about half the
+ * time; the other half it previewed and asked anyway, and correct behaviour
+ * was scored as a failure. Answering the question is both faithful and stable.
  */
 async function legTwo(alice, token) {
   leg("Leg 2 — Alice exports for Bob");
   const res = await runSession({
-    prompt:
-      `Share what you know about ${token} with my colleague bob, and write the bundle. ` +
-      `I approve sending it — you do not need to check back with me.`,
+    turns: [
+      `Share what you know about ${token} with my colleague bob.`,
+      `Yes, that list is right — go ahead and write the bundle.`,
+    ],
     storeDir: alice.store,
     projectDir: alice.project,
     serveCommand,
@@ -301,15 +304,16 @@ async function legThreePreview(bob, bundle, token) {
 /**
  * Leg 3b -- Bob takes it in. Imports are never overwrites and land private.
  *
- * Consent is granted in the prompt for the same reason as leg 2. Note the
+ * Consent is answered in a second turn for the same reason as leg 2. Note the
  * contrast with leg 3a, which withholds it: there, nothing may be stored.
  */
 async function legThreeImport(bob, bundle, token) {
   leg("Leg 3b — Bob imports");
   const res = await runSession({
-    prompt:
-      `Please import the memories in ${bundle} into my memory. ` +
-      `I have read them and I approve taking all of them — go ahead.`,
+    turns: [
+      `Please import the memories in ${bundle} into my memory.`,
+      `Yes, all of them — go ahead.`,
+    ],
     storeDir: bob.store,
     projectDir: bob.project,
     serveCommand,
