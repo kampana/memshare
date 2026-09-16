@@ -319,6 +319,25 @@ approval before they act, so what a broader query caught is visible before
 anything happens to it.
 
 
+## 0.7.0
+
+**Usage tracking — is memshare actually working?** The existing stats count stored
+items, but they can't tell you whether `memory_get` is being called and returning
+results, or whether `memory_set` calls are landing. Now they can.
+
+- **`usage.jsonl`** — append-only log in the store directory, one JSON line per
+  MCP tool call. Records tool name, timestamp, client name, and outcome (`hits`
+  count for `memory_get`, `saved` boolean for `memory_set`/`memory_suggest`).
+- **`memory_stats`** MCP tool now includes a `usage` object: per-tool call counts
+  and success rates, per-day call sparkline, per-client breakdown, and average
+  hit count for `memory_get`.
+- **`memshare stats`** CLI renders a "Tool call activity" section with the same
+  data: sparkline, per-tool breakdown (calls, success rate, avg hits), and
+  client list when more than one client is active.
+
+This is the tool you point someone at when diagnosing their setup: "run
+`memshare stats` and tell me what the tool call activity section says."
+
 ## Unreleased
 
 - One `claude mcp add` line everywhere. The landing page said
