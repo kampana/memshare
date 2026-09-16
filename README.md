@@ -25,11 +25,13 @@ npm install -g memshare-mcp
 memshare init
 
 # Connect it to Claude Code
-claude mcp add memshare -- npx -y memshare-mcp serve
+claude mcp add memshare --scope user -- npx -y memshare-mcp serve
 
 # Or add it to any MCP client's config:
 #   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
 ```
+
+`npx` rather than the `memshare` you just installed globally, because a client launched from a desktop icon rather than a shell often does not inherit a `PATH` that finds it. `--scope user` because the store is yours across every project, not one repo's.
 
 `memshare init` also writes standing instructions into whichever of `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` already exist — the files your assistant reads at the start of every session. Nothing in MCP can make a model call a tool, and some clients never pass the server's own instructions to the model at all, so that file is the one channel that always arrives. It creates none of those files, it never appends twice, and `memshare init --no-append-instructions` skips it entirely.
 
