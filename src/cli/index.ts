@@ -192,7 +192,7 @@ program
 
       console.log();
       console.log(heading("Next:"));
-      console.log(`  claude mcp add memshare -- npx -y memshare-mcp serve`);
+      console.log(`  claude mcp add memshare --scope user -- npx -y memshare-mcp serve`);
       console.log(`  memshare add "I prefer TypeScript" --tags preferences --visibility shareable`);
       console.log();
     },

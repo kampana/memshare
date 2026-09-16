@@ -317,3 +317,18 @@ Note this widens `--query` wherever it selects rather than reads — bulk
 visibility changes and export selection. Both still render the same plan for
 approval before they act, so what a broader query caught is visible before
 anything happens to it.
+
+
+## Unreleased
+
+- One `claude mcp add` line everywhere. The landing page said
+  `-- memshare serve`, the README, deck and `memshare init` said
+  `-- npx -y memshare-mcp serve`, and only the landing page passed
+  `--scope user`. All four now read
+  `claude mcp add memshare --scope user -- npx -y memshare-mcp serve`.
+  The `npx` form is the one that survives a client launched from a GUI
+  rather than a shell, where a bare `memshare` is often not on `PATH`;
+  `--scope user` is right because the store is per-person, not per-project.
+- The landing page now shows the generic `mcpServers` block for Cursor,
+  Windsurf, VS Code and Claude Desktop. It claimed to support them and then
+  only ever showed the Claude Code command.

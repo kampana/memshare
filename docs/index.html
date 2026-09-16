@@ -398,10 +398,10 @@
     <div class="codeblock">
       <pre id="quickstartCmd"><span class="g">npm</span> install -g memshare-mcp
 <span class="g">memshare</span> init
-<span class="g">claude</span> mcp add memshare --scope user -- memshare serve</pre>
+<span class="g">claude</span> mcp add memshare --scope user -- npx -y memshare-mcp serve</pre>
       <button onclick="copyCode(this, 'quickstartCmd')">Copy</button>
     </div>
-    <p class="note">That is the whole setup. Restart your assistant and it can recall and save straight away.</p>
+    <p class="note">That is the whole setup. Restart your assistant and it can recall and save straight away. <code>--scope user</code> because the store is yours, not one project&rsquo;s; <code>npx</code> because a client started from a desktop icon rather than a shell often cannot find a globally installed binary.</p>
     <p class="note"><code>memshare init</code> is the line that makes it stick — it writes a standing request into the instruction files your assistant already reads at the start of every session. Nothing in MCP can make a model decide to call a tool.</p>
 
     <h3 class="sub">Cursor, Windsurf, VS Code, Claude Desktop</h3>
