@@ -75,7 +75,7 @@
     background: rgba(124,106,255,.13); padding: 6px 14px; border-radius: 999px; margin-bottom: 26px;
   }
   h1 {
-    font-size: clamp(2.1rem, 5.4vw, 3.6rem); font-weight: 600;
+    font-size: clamp(1.95rem, 5.4vw, 3.6rem); font-weight: 600;
     line-height: 1.12; letter-spacing: -.025em; margin-bottom: 20px;
   }
   h1 em { font-style: normal; color: var(--accent-light); }
@@ -118,6 +118,13 @@
     letter-spacing: -.02em; line-height: 1.2; margin-bottom: 14px;
   }
   .section-lede { color: var(--text-2); max-width: 42rem; margin-bottom: 40px; }
+  h3.sub { font-size: 1.05rem; font-weight: 600; letter-spacing: -.01em; margin: 42px 0 8px; }
+  .sub-lede { color: var(--text-2); font-size: .93rem; max-width: 42rem; margin-bottom: 16px; }
+  .note code, .sub-lede code, .card p code {
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace; font-size: .92em;
+    color: var(--accent-light); background: var(--surface-2);
+    padding: 1px 5px; border-radius: 5px;
+  }
 
   .grid { display: grid; gap: 20px; }
   .grid-3 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
@@ -184,11 +191,32 @@
   footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; }
   .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
 
+  @media (max-width: 860px) {
+    .install { max-width: none; }
+  }
+
   @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
     header { padding: 60px 0 50px; }
     section { padding: 56px 0; }
     .nav-links a:not(.star-btn) { display: none; }
     .step { grid-template-columns: 1fr; gap: 12px; }
+    .card { padding: 21px; }
+
+    /* wrap the long lines instead of hiding them behind a sideways scroll */
+    h1 br, .lede br { display: none; }
+    pre {
+      white-space: pre-wrap; overflow-wrap: anywhere;
+      font-size: .8rem; line-height: 1.7; padding: 14px;
+    }
+    .codeblock pre { padding: 42px 14px 14px; }
+    .codeblock button { top: 8px; right: 8px; }
+    .install { padding: 11px 13px; font-size: .85rem; gap: 8px; }
+    .install code { white-space: normal; overflow-wrap: anywhere; }
+
+    /* the comparison table is the one thing that still has to scroll — let it
+       run to the screen edges so it reads as scrollable */
+    .table-scroll { margin: 0 -18px; padding: 0 18px; }
   }
 </style>
 </head>
@@ -374,6 +402,23 @@
       <button onclick="copyCode(this, 'quickstartCmd')">Copy</button>
     </div>
     <p class="note">That is the whole setup. Restart your assistant and it can recall and save straight away.</p>
+    <p class="note"><code>memshare init</code> is the line that makes it stick — it writes a standing request into the instruction files your assistant already reads at the start of every session. Nothing in MCP can make a model decide to call a tool.</p>
+
+    <h3 class="sub">Cursor, Windsurf, VS Code, Claude Desktop</h3>
+    <p class="sub-lede">Same first two lines. Then, instead of <code>claude mcp add</code>, put the server in whichever file your client keeps its MCP config in:</p>
+    <div class="codeblock">
+      <pre id="mcpConfig">{
+  <span class="f">"mcpServers"</span>: {
+    <span class="f">"memshare"</span>: {
+      <span class="f">"command"</span>: <span class="s">"npx"</span>,
+      <span class="f">"args"</span>: [<span class="s">"-y"</span>, <span class="s">"memshare-mcp"</span>, <span class="s">"serve"</span>]
+    }
+  }
+}</pre>
+      <button onclick="copyCode(this, 'mcpConfig')">Copy</button>
+    </div>
+    <p class="note">Any MCP client works, and they all read the same local store — so what you save in Cursor is there in Claude Code.</p>
+
     <div class="cta-row">
       <a class="btn btn-primary" href="https://github.com/kampana/memshare" target="_blank" rel="noopener">★ Star on GitHub</a>
       <a class="btn btn-ghost" href="https://www.npmjs.com/package/memshare-mcp" target="_blank" rel="noopener">View on npm</a>
