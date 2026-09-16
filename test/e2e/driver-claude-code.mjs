@@ -102,13 +102,30 @@ function isolationArgs() {
 }
 
 /**
- * Runs one prompt as one fresh conversation.
+ * Runs one fresh conversation -- `prompt` for a single turn, or `turns` for an
+ * exchange.
+ *
+ * `turns` exists because of the consent gate. `memory_export`'s description
+ * tells the model to show the preview and *wait*, and in a single-shot session
+ * waiting means ending the turn -- so a leg that needs the confirmed call has
+ * no way to reach it except by talking the model out of the behaviour the tool
+ * is designed to have. Consent granted up front in the first prompt does that
+ * unreliably: the model is as likely to preview and stop anyway, which is
+ * correct behaviour scored as a failure. A second turn is how a user actually
+ * answers, so that is what the driver sends.
+ *
+ * Turns are fed over `--input-format stream-json`, one message at a time, each
+ * sent only once the previous turn's `result` event has arrived. It stays one
+ * process and one conversation, so `--no-session-persistence` still holds --
+ * resuming by session id would have meant writing the run into ~/.claude.
  *
  * Returns what the assertions actually care about -- which tools were called,
- * in order, with what arguments -- plus the final text and what it cost.
+ * across every turn, in order, with what arguments -- plus the final text and
+ * what it cost.
  */
 export async function runSession({
   prompt,
+  turns,
   storeDir,
   serveCommand,
   projectDir,
@@ -117,6 +134,8 @@ export async function runSession({
   budgetUsd = 0.5,
   timeoutMs = 240_000,
 }) {
+  const messages = turns ?? [prompt];
+  const multiTurn = messages.length > 1;
   // The cwd is the fake project: it holds the CLAUDE.md that `memshare init`
   // appended to, so the model picks the instructions up the way a real user's
   // would arrive -- discovered from disk, not injected by the test. It is also
@@ -137,7 +156,9 @@ export async function runSession({
 
   const args = [
     "--print",
-    prompt,
+    // A multi-turn run takes its messages on stdin instead, so there is no
+    // prompt argument to give.
+    ...(multiTurn ? ["--input-format", "stream-json"] : [messages[0]]),
     "--model",
     model,
     "--mcp-config",
@@ -164,13 +185,54 @@ export async function runSession({
   const child = spawn(resolveClaudeBin(), args, {
     cwd,
     env: { ...process.env, MEMSHARE_DIR: storeDir },
-    stdio: ["ignore", "pipe", "pipe"],
+    stdio: [multiTurn ? "pipe" : "ignore", "pipe", "pipe"],
   });
 
   let stdout = "";
   let stderr = "";
-  child.stdout.on("data", (d) => (stdout += d));
   child.stderr.on("data", (d) => (stderr += d));
+
+  if (multiTurn) {
+    let sent = 0;
+    const sendNext = () => {
+      child.stdin.write(
+        JSON.stringify({
+          type: "user",
+          message: { role: "user", content: [{ type: "text", text: messages[sent++] }] },
+        }) + "\n",
+      );
+    };
+
+    // Turns are separated by `result` events, so the stream has to be read as
+    // it arrives rather than parsed once at the end -- the next message cannot
+    // be sent until the previous turn is actually over.
+    let partial = "";
+    child.stdout.on("data", (d) => {
+      const chunk = String(d);
+      stdout += chunk;
+      partial += chunk;
+      const lines = partial.split("\n");
+      partial = lines.pop() ?? "";
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith("{")) continue;
+        let event;
+        try {
+          event = JSON.parse(trimmed);
+        } catch {
+          continue;
+        }
+        if (event.type !== "result") continue;
+        if (sent < messages.length) sendNext();
+        else child.stdin.end();
+      }
+    });
+
+    child.stdin.on("error", () => {}); // the child may exit first; not our failure
+    sendNext();
+  } else {
+    child.stdout.on("data", (d) => (stdout += d));
+  }
 
   const timer = setTimeout(() => child.kill("SIGKILL"), timeoutMs);
   const code = await new Promise((resolve, reject) => {
@@ -200,6 +262,7 @@ function parseStream(stdout) {
   let finalText = "";
   let costUsd = null;
   let error = null;
+  let resultEvent = null;
 
   for (const line of stdout.split("\n")) {
     const trimmed = line.trim();
@@ -230,6 +293,7 @@ function parseStream(stdout) {
         results.set(block.tool_use_id, { isError: Boolean(block.is_error), body });
       }
     } else if (event.type === "result") {
+      resultEvent = event;
       finalText = typeof event.result === "string" ? event.result : "";
       costUsd = event.total_cost_usd ?? null;
       if (event.is_error) error = event.subtype ?? "error";
@@ -258,5 +322,8 @@ function parseStream(stdout) {
     text: finalText || texts.join("\n"),
     costUsd,
     error,
+    // The whole `result` event, kept only so a failure can say *why* the
+    // session ended badly. `exit 1, success` on its own is not a diagnosis.
+    resultEvent,
   };
 }

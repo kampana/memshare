@@ -23,20 +23,24 @@ Five sessions, each a fresh conversation, against two simulated machines:
 | Leg | Prompt | What must happen |
 |---|---|---|
 | 1 | Alice is told a fact in passing | `memory_set`, shareable, fact in the store |
-| 2 | "share it with bob" | `memory_export` twice — preview, then confirmed — bundle written |
+| 2 | "share it with bob", then "yes, go ahead" | `memory_export` twice — preview, then confirmed — bundle written |
 | 3a | "what's in this file?" | `memory_preview`, and Bob's store still empty |
-| 3b | "import it" | `memory_import` confirmed; lands `private` / `imported` |
+| 3b | "import it", then "yes, all of them" | `memory_import` confirmed; lands `private` / `imported` |
 | 4 | a question only Alice's memory answers | `memory_get`, and the fact in the reply |
 
 A run-unique subject (`Zynthara-1a2b`) is planted in leg 1, so every later
 assertion is an exact match rather than a judgement call, and nothing can be
 answered from the model's prior knowledge.
 
-Legs 2 and 3b grant consent in the prompt. The gate is deliberately a human
-one: told only "share this with bob", the model previews and stops to ask —
-correct behaviour that a single-shot session can never answer. The handshake
-assertions are unaffected; the model must still preview first, and both halves
-are checked. Leg 3a withholds consent on purpose, which is what makes
+Legs 2 and 3b run as two turns, because the consent gate is deliberately a
+human one: told only "share this with bob", the model previews and stops to
+ask. An earlier version of these legs granted consent up front in the same
+sentence — "I approve sending it, you do not need to check back with me" — to
+get a single-shot session past the gate. That fought the tool descriptions,
+which say to show the list and *wait*, and it obeyed roughly half the time;
+the other half it previewed and asked anyway, and the run failed for the model
+doing exactly the right thing. Answering the question in a second turn is both
+faithful and stable. Leg 3a withholds consent on purpose, which is what makes
 "looking is free" testable.
 
 ## Isolation
@@ -80,9 +84,6 @@ Stores, homes and project directories are all temp dirs, removed at the end.
   memshare block there is no clean control arm — "with instructions" and
   "without" both have them. Measuring that contrast needs a driver that owns
   the whole system prompt.
-- Single-shot sessions only. A multi-turn driver (`--input-format stream-json`)
-  would let the consent gate be answered the way a user answers it, instead of
-  being granted up front.
 - One client. The driver interface is deliberately narrow so a second one —
   the Anthropic SDK bridged to the MCP server over stdio, or Cursor — is a new
   file rather than a rewrite.
