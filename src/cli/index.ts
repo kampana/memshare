@@ -154,6 +154,7 @@ program
       // reads every session is the one channel that always arrives -- and a
       // step nobody performed while it was a suggestion buried in `stats`.
       const added: string[] = [];
+      const updated: string[] = [];
       const alreadyThere: string[] = [];
       let anyFound = false;
 
@@ -161,7 +162,9 @@ program
         for (const file of instructionTargets()) {
           if (!existsSync(file)) continue;
           anyFound = true;
-          if ((await appendInstructionsToFile(file)) === "added") added.push(file);
+          const result = await appendInstructionsToFile(file);
+          if (result === "added") added.push(file);
+          else if (result === "updated") updated.push(file);
           else alreadyThere.push(file);
         }
       }
@@ -187,8 +190,9 @@ program
         );
       } else {
         for (const file of added) console.log(ok(`Told your assistant about it in ${c.bold(file)}`));
-        for (const file of alreadyThere) console.log(info(`${file} already says so.`));
-        if (added.length > 0) console.log(info("Restart your assistant for it to pick that up."));
+        for (const file of updated) console.log(ok(`Updated instructions in ${c.bold(file)}`));
+        for (const file of alreadyThere) console.log(info(`${file} already up to date.`));
+        if (added.length + updated.length > 0) console.log(info("Restart your assistant for it to pick that up."));
       }
 
       console.log();
@@ -1049,11 +1053,12 @@ program
     // Unlike `init`, this one is explicit about a named file, so it creates
     // the file if it is not there yet.
     const file = expandHome(opts.append);
-    if ((await appendInstructionsToFile(file)) === "already-present") {
-      console.log(info(`${file} already has them. Nothing changed.`));
+    const result = await appendInstructionsToFile(file);
+    if (result === "already-present") {
+      console.log(info(`${file} already up to date. Nothing changed.`));
       return;
     }
-    console.log(ok(`Added them to ${c.bold(file)}`));
+    console.log(ok(result === "updated" ? `Updated instructions in ${c.bold(file)}` : `Added them to ${c.bold(file)}`));
     console.log(info("Restart your assistant for it to pick them up."));
   });
 

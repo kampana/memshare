@@ -140,4 +140,32 @@ describe("appendInstructionsToFile", () => {
     expect(await appendInstructionsToFile(file)).toBe("added");
     expect(await fs.readFile(file, "utf8")).toBe(ASSISTANT_INSTRUCTIONS);
   });
+
+  it("replaces an older instructions block with the current one", async () => {
+    const file = path.join(dir, "CLAUDE.md");
+    const oldBlock = `${INSTRUCTIONS_MARKER}\n\nOld instructions that are now outdated.\n`;
+    await fs.writeFile(file, `# My project\n\n${oldBlock}`, "utf8");
+
+    expect(await appendInstructionsToFile(file)).toBe("updated");
+
+    const after = await fs.readFile(file, "utf8");
+    expect(after).toContain("# My project");
+    expect(after).toContain(ASSISTANT_INSTRUCTIONS);
+    expect(after).not.toContain("Old instructions");
+  });
+
+  it("preserves content after the instructions block when replacing", async () => {
+    const file = path.join(dir, "CLAUDE.md");
+    const oldBlock = `${INSTRUCTIONS_MARKER}\n\nOld instructions.\n`;
+    await fs.writeFile(file, `# My project\n\n${oldBlock}\n## Other section\n\nKeep this.\n`, "utf8");
+
+    expect(await appendInstructionsToFile(file)).toBe("updated");
+
+    const after = await fs.readFile(file, "utf8");
+    expect(after).toContain("# My project");
+    expect(after).toContain(ASSISTANT_INSTRUCTIONS);
+    expect(after).toContain("## Other section");
+    expect(after).toContain("Keep this.");
+    expect(after).not.toContain("Old instructions");
+  });
 });
