@@ -141,8 +141,10 @@ export function instructionTargets(): string[] {
  *
  * Never throws, never writes to stdout (that belongs to the transport).
  */
-export async function refreshInstructionFiles(): Promise<void> {
-  for (const file of instructionTargets()) {
+export async function refreshInstructionFiles(
+  files: string[] = instructionTargets(),
+): Promise<void> {
+  for (const file of files) {
     try {
       const existing = await fs.readFile(file, "utf8");
       if (!existing.includes(INSTRUCTIONS_MARKER)) continue;
