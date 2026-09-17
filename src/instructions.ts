@@ -113,6 +113,43 @@ export async function appendInstructionsToFile(
 }
 
 /**
+ * The files an assistant reads at the start of a session. Only files that
+ * already exist are touched — creating a CLAUDE.md in a repo that has none
+ * is not memshare's business.
+ */
+export function instructionTargets(): string[] {
+  return [
+    ...new Set([
+      expandHome("~/.claude/CLAUDE.md"),
+      path.resolve("CLAUDE.md"),
+      path.resolve("AGENTS.md"),
+    ]),
+  ];
+}
+
+/**
+ * Silently update stale instruction blocks in every file that already has
+ * them. Called from the MCP server at startup so that upgrading the npm
+ * package is enough — no manual `memshare init` needed.
+ *
+ * Never throws, never writes to stdout (that belongs to the transport).
+ */
+export async function refreshInstructionFiles(): Promise<void> {
+  for (const file of instructionTargets()) {
+    try {
+      const existing = await fs.readFile(file, "utf8");
+      if (!existing.includes(INSTRUCTIONS_MARKER)) continue;
+      const result = await appendInstructionsToFile(file);
+      if (result === "updated") {
+        console.error(`memshare: updated instructions in ${file}`);
+      }
+    } catch {
+      // File missing or unreadable — fine, skip it.
+    }
+  }
+}
+
+/**
  * Finds the memshare instructions block in `text`. The block starts at the
  * marker and runs until the next markdown heading of equal or higher level,
  * or end-of-file.

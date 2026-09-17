@@ -4,6 +4,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
+import { refreshInstructionFiles } from "../instructions.js";
 import { detectProjectTag } from "../memory/project.js";
 import { summarisePII } from "../memory/redact.js";
 import { computeStats } from "../memory/stats.js";
@@ -657,6 +658,10 @@ export async function serve(store: MemoryStore = new MemoryStore()): Promise<voi
       `memshare: no store at ${store.root}. Run \`memshare init\` first; starting with defaults for now.`,
     );
   }
+  // Update stale instruction blocks in CLAUDE.md / AGENTS.md before the
+  // session starts, so upgrading the npm package is all a user needs to do.
+  refreshInstructionFiles().catch(() => {});
+
   const server = await createServer(store);
   const transport = new StdioServerTransport();
   await server.connect(transport);
