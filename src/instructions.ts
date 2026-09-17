@@ -72,9 +72,9 @@ long-term memory of me and my work.
 `;
 
 /**
- * Appends the standing instructions to `file`, unless they are already in it.
- * The marker is the check, so this is safe to run again -- which matters,
- * because `memshare init` now runs it unprompted and people re-run `init`.
+ * Appends the standing instructions to `file`, or replaces them if the file
+ * already has an older version. The marker (`## Memory (memshare)`) is used
+ * both to detect presence and to delimit the block for replacement.
  *
  * The file is created if it is missing. `init` only calls this for files that
  * already exist -- putting a CLAUDE.md in a repo that has none is not
@@ -83,7 +83,7 @@ long-term memory of me and my work.
  */
 export async function appendInstructionsToFile(
   file: string,
-): Promise<"added" | "already-present"> {
+): Promise<"added" | "updated" | "already-present"> {
   const target = expandHome(file);
   let existing = "";
   try {
@@ -92,11 +92,38 @@ export async function appendInstructionsToFile(
     if ((err as NodeJS.ErrnoException).code !== "ENOENT") throw err;
   }
 
-  if (existing.includes(INSTRUCTIONS_MARKER)) return "already-present";
+  if (existing.includes(INSTRUCTIONS_MARKER)) {
+    const block = extractBlock(existing);
+    if (block !== null && block.content.trimEnd() !== ASSISTANT_INSTRUCTIONS.trimEnd()) {
+      const updated =
+        existing.substring(0, block.start) +
+        ASSISTANT_INSTRUCTIONS +
+        existing.substring(block.end);
+      await fs.writeFile(target, updated, "utf8");
+      return "updated";
+    }
+    return "already-present";
+  }
 
   await fs.mkdir(path.dirname(target), { recursive: true });
   const separator =
     existing === "" || existing.endsWith("\n\n") ? "" : existing.endsWith("\n") ? "\n" : "\n\n";
   await fs.appendFile(target, `${separator}${ASSISTANT_INSTRUCTIONS}`, "utf8");
   return "added";
+}
+
+/**
+ * Finds the memshare instructions block in `text`. The block starts at the
+ * marker and runs until the next markdown heading of equal or higher level,
+ * or end-of-file.
+ */
+function extractBlock(text: string): { start: number; end: number; content: string } | null {
+  const markerIdx = text.indexOf(INSTRUCTIONS_MARKER);
+  if (markerIdx === -1) return null;
+
+  const afterMarker = markerIdx + INSTRUCTIONS_MARKER.length;
+  const nextHeading = text.substring(afterMarker).search(/\n## /);
+  const end = nextHeading === -1 ? text.length : afterMarker + nextHeading + 1;
+
+  return { start: markerIdx, end, content: text.substring(markerIdx, end) };
 }
