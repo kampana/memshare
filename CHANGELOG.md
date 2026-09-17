@@ -352,6 +352,14 @@ skipped memshare entirely.
   silently skipping it. Existing users get the fix by re-running either
   command.
 
+## 0.7.2
+
+**Instructions update themselves.** The MCP server now checks CLAUDE.md and
+AGENTS.md at startup and replaces stale memshare instruction blocks with the
+current version. Upgrading the npm package is all a user needs — no manual
+`memshare init` required. The update is fire-and-forget, logs to stderr only,
+and never creates files it did not already find.
+
 ## Unreleased
 
 - One `claude mcp add` line everywhere. The landing page said
