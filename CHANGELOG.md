@@ -338,6 +338,20 @@ results, or whether `memory_set` calls are landing. Now they can.
 This is the tool you point someone at when diagnosing their setup: "run
 `memshare stats` and tell me what the tool call activity section says."
 
+## 0.7.1
+
+**Claude Code: fix the deferred-tool gap.** In Claude Code, memshare's MCP
+tools are deferred — the model sees tool names but not schemas until it calls
+`ToolSearch`. The instructions never mentioned this step, so sessions silently
+skipped memshare entirely.
+
+- The MCP handshake instructions and the standing instructions template now
+  include a "Load the tools first" bullet with the exact `ToolSearch` call.
+- `memshare init` and `memshare instructions --append` now **update** an
+  existing instructions block when the content has changed, instead of
+  silently skipping it. Existing users get the fix by re-running either
+  command.
+
 ## Unreleased
 
 - One `claude mcp add` line everywhere. The landing page said
