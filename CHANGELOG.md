@@ -360,6 +360,13 @@ current version. Upgrading the npm package is all a user needs — no manual
 `memshare init` required. The update is fire-and-forget, logs to stderr only,
 and never creates files it did not already find.
 
+## 0.7.3
+
+**Multi-tool instruction targets.** `memshare init` and the server's startup
+auto-update now cover `.cursorrules` (Cursor), `.windsurfrules` (Windsurf),
+and `.github/copilot-instructions.md` (GitHub Copilot) alongside the Claude
+Code files. Same rule: only files that already exist are touched.
+
 ## Unreleased
 
 - One `claude mcp add` line everywhere. The landing page said
