@@ -8,6 +8,7 @@ import {
   ASSISTANT_INSTRUCTIONS,
   INSTRUCTIONS_MARKER,
   appendInstructionsToFile,
+  refreshInstructionFiles,
 } from "../src/instructions.js";
 
 describe("assistant instructions", () => {
@@ -167,5 +168,51 @@ describe("appendInstructionsToFile", () => {
     expect(after).toContain("## Other section");
     expect(after).toContain("Keep this.");
     expect(after).not.toContain("Old instructions");
+  });
+});
+
+describe("refreshInstructionFiles", () => {
+  let dir: string;
+
+  beforeEach(async () => {
+    dir = await fs.mkdtemp(path.join(os.tmpdir(), "memshare-refresh-"));
+  });
+
+  afterEach(async () => {
+    await fs.rm(dir, { recursive: true, force: true });
+  });
+
+  it("updates a stale file and leaves a current one alone", async () => {
+    const stale = path.join(dir, "CLAUDE.md");
+    const current = path.join(dir, "AGENTS.md");
+
+    await fs.writeFile(stale, `# Project\n\n${INSTRUCTIONS_MARKER}\n\nOutdated block.\n`, "utf8");
+    await fs.writeFile(current, `# Project\n\n${ASSISTANT_INSTRUCTIONS}`, "utf8");
+
+    await refreshInstructionFiles([stale, current]);
+
+    const staleAfter = await fs.readFile(stale, "utf8");
+    expect(staleAfter).toContain(ASSISTANT_INSTRUCTIONS);
+    expect(staleAfter).not.toContain("Outdated block");
+
+    const currentAfter = await fs.readFile(current, "utf8");
+    expect(currentAfter).toBe(`# Project\n\n${ASSISTANT_INSTRUCTIONS}`);
+  });
+
+  it("skips files that do not exist", async () => {
+    const missing = path.join(dir, "does-not-exist.md");
+    await refreshInstructionFiles([missing]);
+    // no throw, file still missing
+    await expect(fs.access(missing)).rejects.toThrow();
+  });
+
+  it("skips files that have no memshare marker", async () => {
+    const unrelated = path.join(dir, ".cursorrules");
+    const original = "Some Cursor rules with no memshare block.\n";
+    await fs.writeFile(unrelated, original, "utf8");
+
+    await refreshInstructionFiles([unrelated]);
+
+    expect(await fs.readFile(unrelated, "utf8")).toBe(original);
   });
 });
