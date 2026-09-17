@@ -113,16 +113,23 @@ export async function appendInstructionsToFile(
 }
 
 /**
- * The files an assistant reads at the start of a session. Only files that
- * already exist are touched — creating a CLAUDE.md in a repo that has none
- * is not memshare's business.
+ * Every file an AI tool might read at the start of a session, across all
+ * major clients. Only files that already exist are touched — creating one
+ * in a repo that has none is not memshare's business.
  */
 export function instructionTargets(): string[] {
   return [
     ...new Set([
+      // Claude Code
       expandHome("~/.claude/CLAUDE.md"),
       path.resolve("CLAUDE.md"),
       path.resolve("AGENTS.md"),
+      // Cursor
+      path.resolve(".cursorrules"),
+      // Windsurf
+      path.resolve(".windsurfrules"),
+      // GitHub Copilot
+      path.resolve(".github/copilot-instructions.md"),
     ]),
   ];
 }
