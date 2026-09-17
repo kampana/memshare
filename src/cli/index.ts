@@ -6,7 +6,11 @@ import * as path from "node:path";
 import { checkbox, confirm, input, select } from "@inquirer/prompts";
 import { Command, Option } from "commander";
 
-import { ASSISTANT_INSTRUCTIONS, appendInstructionsToFile } from "../instructions.js";
+import {
+  ASSISTANT_INSTRUCTIONS,
+  appendInstructionsToFile,
+  instructionTargets,
+} from "../instructions.js";
 import { summarisePII } from "../memory/redact.js";
 import { computeStats } from "../memory/stats.js";
 import { computeUsageStats, readUsageLog } from "../memory/usage.js";
@@ -75,20 +79,6 @@ async function requireStore(): Promise<MemoryStore> {
 
 class UserError extends Error {}
 
-/**
- * The files an assistant actually reads at the start of a session. `init`
- * appends to the ones that already exist and creates none of them: putting a
- * CLAUDE.md in a repo that has none is not memshare's business.
- */
-function instructionTargets(): string[] {
-  return [
-    ...new Set([
-      expandHome("~/.claude/CLAUDE.md"),
-      path.resolve("CLAUDE.md"),
-      path.resolve("AGENTS.md"),
-    ]),
-  ];
-}
 
 // ---------------------------------------------------------------- init
 
