@@ -23,9 +23,14 @@ export const ASSISTANT_INSTRUCTIONS = `${INSTRUCTIONS_MARKER}
 You have a memshare memory store available over MCP. Treat it as your
 long-term memory of me and my work.
 
-- **Recall first.** At the start of a conversation, call \`memory_get\` to
-  find out what you already know about me and this project. Call it again
-  when the topic shifts.
+- **Load the tools first.** In Claude Code, memshare tools may be deferred
+  (name only, no schema). Before the first memshare call in a session, run
+  \`ToolSearch\` with query \`"+memshare memory"\` to load their schemas.
+  Skipping this step causes \`memory_get\` / \`memory_set\` to fail silently.
+  In other tools (Cursor, etc.) this step is not needed.
+- **Recall first.** At the start of a conversation — immediately after
+  loading the tools — call \`memory_get\` to find out what you already know
+  about me and this project. Call it again when the topic shifts.
 - **Save as you go.** When you learn something durable, call \`memory_set\`
   straight away. Don't wait to be asked, and don't batch it to the end of
   the conversation. Worth saving: a decision and the reason behind it, a

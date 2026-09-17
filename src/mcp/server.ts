@@ -68,6 +68,10 @@ export async function createServer(store: MemoryStore = new MemoryStore()): Prom
       instructions:
         "memshare is this user's own memory store, shared across every AI tool they use. " +
         "Treat it as your long-term memory of them.\n\n" +
+        "IMPORTANT: In Claude Code, memshare tools may be deferred (name only, no schema). " +
+        "Before the first memshare call in a session, run ToolSearch with query " +
+        '"+memshare memory" to load the schemas -- otherwise memory_get / memory_set ' +
+        "will fail with InputValidationError.\n\n" +
         "At the start of a conversation, call memory_get to recall what you already know about " +
         "this user and their work, and call it again when the topic shifts. " +
         "Reuse existing tags rather than inventing near-duplicates -- memory_list_tags shows them.\n\n" +
