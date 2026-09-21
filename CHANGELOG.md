@@ -374,8 +374,18 @@ auto-update now cover `.cursorrules` (Cursor), `.windsurfrules` (Windsurf),
 and `.github/copilot-instructions.md` (GitHub Copilot) alongside the Claude
 Code files. Same rule: only files that already exist are touched.
 
-## Unreleased
+## 0.7.5
 
+**`memshare init` creates instruction files by default.** Previously it only
+appended to `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` if they
+already existed — a fresh user got no instruction files and had to discover
+`memshare instructions --append` in the troubleshooting section. Now `init`
+creates them, so capture works out of the box. `--no-create-instructions`
+opts out (still appends to files that already exist).
+
+- README quickstart now shows MCP config for Cursor, Windsurf and GitHub
+  Copilot alongside the Claude Code command. A Cursor user reading
+  top-to-bottom no longer has to hunt for the right setup step.
 - One `claude mcp add` line everywhere. The landing page said
   `-- memshare serve`, the README, deck and `memshare init` said
   `-- npx -y memshare-mcp serve`, and only the landing page passed

@@ -47,7 +47,7 @@ import {
   warn,
 } from "./ui.js";
 
-const VERSION = "0.7.4";
+const VERSION = "0.7.5";
 
 const program = new Command();
 
