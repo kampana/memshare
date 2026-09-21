@@ -134,6 +134,7 @@
   }
   .tool-arrow {
     color: var(--text-3); font-size: .85rem; transition: transform .2s; flex-shrink: 0;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
   }
   .tool.open .tool-arrow { transform: rotate(180deg); }
   .tool.open .tool-desc { white-space: normal; }
@@ -230,6 +231,7 @@
     .tool-head { flex-wrap: wrap; gap: 4px 10px; padding: 13px 14px; }
     .tool-desc { white-space: normal; flex-basis: 100%; order: 3; font-size: .84rem; }
     .tool-fn { font-size: .8rem; }
+    .tool-arrow { font-size: 1.2rem; width: 40px; height: 40px; }
     .tool-body { padding: 0 14px 16px; }
     .params { font-size: .8rem; }
     .params td:first-child { white-space: normal; font-size: .76rem; padding-right: 10px; }
