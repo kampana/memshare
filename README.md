@@ -23,17 +23,32 @@ No central server. No cloud. No signup.
 ```bash
 npm install -g memshare-mcp
 memshare init
+```
 
-# Connect it to Claude Code
+Then connect it to your AI tool:
+
+```bash
+# Claude Code
 claude mcp add memshare --scope user -- npx -y memshare-mcp serve
+```
 
-# Or add it to any MCP client's config:
-#   { "mcpServers": { "memshare": { "command": "npx", "args": ["-y", "memshare-mcp", "serve"] } } }
+```jsonc
+// Cursor / Windsurf / GitHub Copilot — add to your MCP config
+// (Cursor: .cursor/mcp.json, Windsurf: .windsurf/mcp.json,
+//  Copilot: .github/copilot-mcp.json — or the global equivalent)
+{
+  "mcpServers": {
+    "memshare": {
+      "command": "npx",
+      "args": ["-y", "memshare-mcp", "serve"]
+    }
+  }
+}
 ```
 
 `npx` rather than the `memshare` you just installed globally, because a client launched from a desktop icon rather than a shell often does not inherit a `PATH` that finds it. `--scope user` because the store is yours across every project, not one repo's.
 
-`memshare init` also writes standing instructions into whichever of `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` already exist — the files your assistant reads at the start of every session. Nothing in MCP can make a model call a tool, and some clients never pass the server's own instructions to the model at all, so that file is the one channel that always arrives. It creates none of those files, it never appends twice, and `memshare init --no-append-instructions` skips it entirely.
+`memshare init` creates `~/.claude/CLAUDE.md`, `./CLAUDE.md` and `./AGENTS.md` with standing instructions — the files your assistant reads at the start of every session. Nothing in MCP can make a model call a tool, and some clients never pass the server's own instructions to the model at all, so that file is the one channel that always arrives. It never appends twice, `memshare init --no-create-instructions` skips creating missing files (still appends to existing ones), and `memshare init --no-append-instructions` leaves them all alone.
 
 > **Asking an AI assistant to install this for you?** Say "install `memshare-mcp` from github.com/kampana/memshare" — not just "install memshare." The plain name `memshare` is a different, unpublished package on npm, and a search for it can surface unrelated results. The command above is the one that actually works.
 
@@ -104,7 +119,7 @@ A flat line there means capture is not firing, and you know within days rather t
 
 memshare can offer memory, but nothing in MCP can make a model *use* it. The server asks the assistant to save as it learns — in its handshake and in every tool description — but some clients never pass server instructions to the model at all. That is why `memshare init` also writes the same request into the files your assistant reads every session.
 
-If `memshare list` is still empty after a few days of real work, the likely reason is that the file it needed did not exist when you ran `init`, or your tool reads a different one. Say it there by hand:
+If `memshare list` is still empty after a few days of real work, the likely reason is that your tool reads a different file, or you ran `init --no-create-instructions`. Point it at the right file:
 
 ```bash
 memshare instructions --append ~/.claude/CLAUDE.md    # Claude Code

@@ -76,10 +76,8 @@ long-term memory of me and my work.
  * already has an older version. The marker (`## Memory (memshare)`) is used
  * both to detect presence and to delimit the block for replacement.
  *
- * The file is created if it is missing. `init` only calls this for files that
- * already exist -- putting a CLAUDE.md in a repo that has none is not
- * memshare's business -- but `instructions --append <file>` names one
- * deliberately, and there "it isn't there yet" is not a reason to refuse.
+ * The file is created if it is missing — both `init` (by default) and
+ * `instructions --append <file>` rely on this.
  */
 export async function appendInstructionsToFile(
   file: string,
@@ -114,8 +112,9 @@ export async function appendInstructionsToFile(
 
 /**
  * Every file an AI tool might read at the start of a session, across all
- * major clients. Only files that already exist are touched — creating one
- * in a repo that has none is not memshare's business.
+ * major clients. `init` creates missing files by default so that a fresh
+ * setup works out of the box; `--no-create-instructions` restores the
+ * old skip-if-missing behaviour.
  */
 export function instructionTargets(): string[] {
   return [

@@ -94,12 +94,17 @@ program
     "--no-append-instructions",
     "leave CLAUDE.md / AGENTS.md alone (they are appended to by default)",
   )
+  .option(
+    "--no-create-instructions",
+    "don't create instruction files that don't exist yet (still appends to existing ones)",
+  )
   .action(
     async (opts: {
       name?: string;
       mode?: string;
       yes?: boolean;
       appendInstructions: boolean;
+      createInstructions: boolean;
     }) => {
       const s = store();
       const existed = s.exists();
@@ -143,17 +148,18 @@ program
       // capture silently does not happen. Writing them into the file the tool
       // reads every session is the one channel that always arrives -- and a
       // step nobody performed while it was a suggestion buried in `stats`.
+      const created: string[] = [];
       const added: string[] = [];
       const updated: string[] = [];
       const alreadyThere: string[] = [];
-      let anyFound = false;
 
       if (opts.appendInstructions) {
         for (const file of instructionTargets()) {
-          if (!existsSync(file)) continue;
-          anyFound = true;
+          const exists = existsSync(file);
+          if (!exists && !opts.createInstructions) continue;
           const result = await appendInstructionsToFile(file);
-          if (result === "added") added.push(file);
+          if (!exists && result === "added") created.push(file);
+          else if (result === "added") added.push(file);
           else if (result === "updated") updated.push(file);
           else alreadyThere.push(file);
         }
@@ -172,17 +178,19 @@ program
             `Left your instruction files alone. Add them later with ${c.bold("memshare instructions --append <file>")}.`,
           ),
         );
-      } else if (!anyFound) {
+      } else if (created.length + added.length + updated.length + alreadyThere.length === 0) {
         console.log(
-          warn(
-            "No CLAUDE.md/AGENTS.md found. Run 'memshare instructions --append <file>' once you have one.",
+          info(
+            "No instruction files found or created. " +
+              `Add one later with ${c.bold("memshare instructions --append <file>")}.`,
           ),
         );
       } else {
+        for (const file of created) console.log(ok(`Created ${c.bold(file)} with standing instructions`));
         for (const file of added) console.log(ok(`Told your assistant about it in ${c.bold(file)}`));
         for (const file of updated) console.log(ok(`Updated instructions in ${c.bold(file)}`));
         for (const file of alreadyThere) console.log(info(`${file} already up to date.`));
-        if (added.length + updated.length > 0) console.log(info("Restart your assistant for it to pick that up."));
+        if (created.length + added.length + updated.length > 0) console.log(info("Restart your assistant for it to pick that up."));
       }
 
       console.log();
