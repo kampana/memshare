@@ -360,6 +360,13 @@ current version. Upgrading the npm package is all a user needs — no manual
 `memshare init` required. The update is fire-and-forget, logs to stderr only,
 and never creates files it did not already find.
 
+## 0.7.4
+
+- Search results from `memory_get` are now ranked by relevance: items
+  matching more of the query words appear first. Previously the OR filter
+  kept everything that matched any word but returned them in arbitrary order,
+  so a `limit` could drop the most relevant result and keep generic ones.
+
 ## 0.7.3
 
 **Multi-tool instruction targets.** `memshare init` and the server's startup
