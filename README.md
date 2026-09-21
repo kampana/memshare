@@ -14,7 +14,7 @@ A designer working in Cursor and backend devs working in Claude Code can hand ea
 
 No central server. No cloud. No signup.
 
-🌐 **[Site](https://kampana.github.io/memshare/)** · 📊 **[Pitch deck](https://kampana.github.io/memshare/pitch.html)**
+🌐 **[Site](https://kampana.github.io/memshare/)** · 📊 **[Pitch deck](https://kampana.github.io/memshare/pitch.html)** · 🔧 **[MCP tools](https://kampana.github.io/memshare/tools.html)**
 
 ---
 

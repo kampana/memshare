@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>memshare — MCP tool reference</title>
+<meta name="description" content="Complete reference for all 10 memshare MCP tools — parameters, conversation examples, and response samples.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧠</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #14141c;
+    --surface-2: #1b1b26;
+    --text: #f0f0f5;
+    --text-2: #a4a4b8;
+    --text-3: #6c6c80;
+    --line: rgba(255,255,255,0.09);
+    --accent: #7c6aff;
+    --accent-light: #a99aff;
+    --green: #00d68f;
+    --red: #ff4d6a;
+    --yellow: #ffc233;
+    --radius: 14px;
+    --maxw: 1080px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.65; -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+  a { color: var(--accent-light); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ---------- nav ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(10,10,15,0.82); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  nav .wrap { display: flex; align-items: center; justify-content: space-between; height: 62px; gap: 16px; }
+  .logo { font-weight: 600; font-size: 1.05rem; letter-spacing: -.01em; color: var(--text); }
+  .logo span { color: var(--accent-light); }
+  .nav-links { display: flex; align-items: center; gap: 22px; font-size: .9rem; }
+  .nav-links a { color: var(--text-2); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .nav-links a.active { color: var(--text); }
+  .star-btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface-2); border: 1px solid var(--line);
+    padding: 7px 14px; border-radius: 999px; color: var(--text) !important;
+    font-size: .86rem; font-weight: 500; white-space: nowrap;
+  }
+  .star-btn:hover { background: #24242f; text-decoration: none !important; }
+
+  /* ---------- page header ---------- */
+  .page-header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--line);
+    position: relative; overflow: hidden;
+  }
+  .page-header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 50% 60% at 30% 0%, rgba(124,106,255,.12), transparent 70%);
+    pointer-events: none;
+  }
+  .page-header .wrap { position: relative; }
+  .page-header h1 {
+    font-size: clamp(1.5rem, 3.5vw, 2.2rem); font-weight: 600;
+    letter-spacing: -.02em; line-height: 1.2; margin-bottom: 10px;
+  }
+  .page-header h1 em { font-style: normal; color: var(--accent-light); }
+  .page-header p { color: var(--text-2); max-width: 38rem; font-size: .95rem; }
+  .page-meta {
+    display: flex; align-items: center; gap: 16px; margin-top: 16px;
+    font-size: .85rem; color: var(--text-3);
+  }
+  .page-meta .count {
+    display: inline-flex; align-items: center; gap: 6px; font-weight: 500;
+  }
+  .page-meta .count b {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 24px; height: 24px; border-radius: 7px;
+    background: var(--accent); color: #fff; font-size: .8rem; font-weight: 600;
+  }
+
+  /* ---------- groups ---------- */
+  .group { padding: 40px 0 0; }
+  .group-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .group-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .group-dot.core { background: var(--accent-light); }
+  .group-dot.curation { background: var(--yellow); }
+  .group-dot.sharing { background: var(--green); }
+  .group-dot.monitor { background: var(--red); }
+  .group-name {
+    font-size: .76rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-3);
+  }
+
+  /* ---------- tool accordion ---------- */
+  .tools { display: flex; flex-direction: column; gap: 8px; }
+
+  .tool {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .tool-head {
+    padding: 15px 20px;
+    cursor: pointer;
+    display: flex; align-items: center; gap: 14px;
+    user-select: none; -webkit-user-select: none;
+    transition: background .15s;
+  }
+  .tool-head:hover { background: var(--surface-2); }
+  .tool-fn {
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace;
+    font-size: .88rem; font-weight: 500; color: var(--accent-light);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .tool-desc {
+    flex: 1; font-size: .9rem; color: var(--text-2); line-height: 1.45;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tool-arrow {
+    color: var(--text-3); font-size: .85rem; transition: transform .2s; flex-shrink: 0;
+  }
+  .tool.open .tool-arrow { transform: rotate(180deg); }
+  .tool.open .tool-desc { white-space: normal; }
+
+  .tool-body {
+    display: none;
+    border-top: 1px solid var(--line);
+    padding: 0 20px 22px;
+  }
+  .tool.open .tool-body { display: block; }
+
+  .sec-label {
+    font-size: .72rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--text-3);
+    margin: 18px 0 8px;
+  }
+  .sec-label:first-child { margin-top: 18px; }
+
+  /* params table */
+  .params {
+    width: 100%; border-collapse: collapse; font-size: .85rem;
+  }
+  .params td {
+    padding: 6px 0; vertical-align: top;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .params tr:last-child td { border-bottom: none; }
+  .params td:first-child {
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace;
+    font-size: .82rem; color: var(--text); white-space: nowrap;
+    padding-right: 16px; width: 1%;
+  }
+  .params td:last-child { color: var(--text-2); }
+  .params code {
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace; font-size: .88em;
+    color: var(--accent-light); background: var(--surface-2);
+    padding: 1px 5px; border-radius: 4px;
+  }
+  .ptyp { font-size: .72rem; color: var(--text-3); margin-left: 4px; }
+  .preq { font-size: .68rem; font-weight: 600; color: var(--accent-light); margin-left: 4px; }
+
+  /* conversation block */
+  .convo {
+    background: var(--surface-2); border-radius: 10px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 10px;
+    font-size: .88rem; line-height: 1.55;
+  }
+  .cx { display: flex; gap: 10px; align-items: flex-start; }
+  .cx-who {
+    font-weight: 600; font-size: .72rem; flex-shrink: 0;
+    padding-top: 3px; min-width: 24px; text-transform: uppercase;
+    letter-spacing: .04em;
+  }
+  .cx-who.u { color: var(--text); }
+  .cx-who.a { color: var(--accent-light); }
+  .cx-t { color: var(--text-2); }
+  .cx-t em { font-style: italic; color: var(--text-3); font-size: .86em; }
+
+  /* response block */
+  .resp {
+    background: var(--surface-2); border-radius: 10px;
+    padding: 14px 16px;
+    font-family: ui-monospace, 'Fira Code', Menlo, monospace;
+    font-size: .8rem; line-height: 1.6; color: var(--text-2);
+    white-space: pre-wrap; word-break: break-word;
+    overflow-x: auto;
+  }
+  .resp .rk { color: var(--text-3); }
+  .resp .rv { color: var(--text); }
+  .resp .rs { color: var(--green); }
+  .resp .rn { color: var(--accent-light); }
+
+  /* two-phase badge */
+  .b2p {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-size: .7rem; font-weight: 600; color: var(--yellow);
+    background: rgba(255,194,51,0.1); border-radius: 999px;
+    padding: 2px 8px; margin-left: 6px; vertical-align: middle;
+  }
+
+  /* ---------- footer ---------- */
+  footer { border-top: 1px solid var(--line); padding: 44px 0 60px; color: var(--text-3); font-size: .88rem; margin-top: 48px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 18px; justify-content: space-between; align-items: center; }
+  .footer-links { display: flex; gap: 20px; flex-wrap: wrap; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 0 18px; }
+    .page-header { padding: 40px 0 30px; }
+    .nav-links a:not(.star-btn) { display: none; }
+    .tool-head { flex-wrap: wrap; gap: 4px 10px; }
+    .tool-desc { white-space: normal; flex-basis: 100%; order: 3; }
+    .tool-fn { font-size: .82rem; }
+    .resp { font-size: .74rem; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="/memshare/" class="logo">mem<span>share</span></a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="pitch.html">Deck</a>
+      <a href="tools.html" class="active">Tools</a>
+      <a class="star-btn" href="https://github.com/kampana/memshare" target="_blank" rel="noopener">
+        ★ Star on GitHub
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="page-header">
+  <div class="wrap">
+    <h1>MCP <em>tool reference</em></h1>
+    <p>Every tool your AI assistant can call — parameters, what a conversation looks like, and what comes back.</p>
+    <div class="page-meta">
+      <span class="count"><b>10</b> tools</span>
+      <span>4 groups</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ Core ═══════ -->
+<div class="wrap">
+<div class="group">
+  <div class="group-head">
+    <div class="group-dot core"></div>
+    <span class="group-name">Core — Read &amp; Write</span>
+  </div>
+  <div class="tools">
+
+    <!-- memory_get -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_get</span>
+        <span class="tool-desc">Look up what is already known about the user and their work</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>query <span class="ptyp">string</span></td><td>Free text matched against content and tags. Multi-word matches any word.</td></tr>
+          <tr><td>tags <span class="ptyp">string[]</span></td><td>Return items carrying any of these tags.</td></tr>
+          <tr><td>visibility <span class="ptyp">"private" | "shareable"</span></td><td>Filter by visibility. Omit for both.</td></tr>
+          <tr><td>from <span class="ptyp">string</span></td><td>Filter by source tool — <code>claude-code</code>, <code>cursor-vscode</code>, <code>cli</code>.</td></tr>
+          <tr><td>limit <span class="ptyp">number</span></td><td>Max items (default 20, max 200).</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"what do you know about the auth service?"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_get({ query: "auth service" })</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rk">Found 3 memories:</span>
+
+<span class="rn">1.</span> <span class="rv">Auth service uses JWT with 15-min refresh tokens.</span>
+   <span class="rk">tags:</span> auth, backend  <span class="rk">·</span>  <span class="rk">visibility:</span> shareable  <span class="rk">·</span>  <span class="rk">from:</span> claude-code
+
+<span class="rn">2.</span> <span class="rv">Auth endpoints require the X-Request-ID header for tracing.</span>
+   <span class="rk">tags:</span> auth, observability  <span class="rk">·</span>  <span class="rk">visibility:</span> shareable  <span class="rk">·</span>  <span class="rk">from:</span> cursor-vscode
+
+<span class="rn">3.</span> <span class="rv">The old SAML flow was removed in v2.4; don't reference it.</span>
+   <span class="rk">tags:</span> auth  <span class="rk">·</span>  <span class="rk">visibility:</span> private  <span class="rk">·</span>  <span class="rk">from:</span> cli</div>
+      </div>
+    </div>
+
+    <!-- memory_set -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_set</span>
+        <span class="tool-desc">Save one durable fact — a decision, a preference, a convention</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>content <span class="ptyp">string</span> <span class="preq">required</span></td><td>The fact as a standalone sentence.</td></tr>
+          <tr><td>visibility <span class="ptyp">"private" | "shareable"</span> <span class="preq">required</span></td><td><code>shareable</code> for project facts; <code>private</code> for personal preferences.</td></tr>
+          <tr><td>tags <span class="ptyp">string[]</span></td><td>Topic tags, e.g. <code>["auth", "deploy"]</code>. Project tag is added automatically.</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"we went with Postgres — the JSONB support decided it"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t">noted: the team chose Postgres for JSONB support.</span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rs">✓ Saved</span> <span class="rk">(id:</span> <span class="rv">mem_a3f8c2d1</span><span class="rk">)</span>
+<span class="rk">content:</span> <span class="rv">The team chose Postgres over MySQL for its JSONB support.</span>
+<span class="rk">visibility:</span> shareable  <span class="rk">·</span>  <span class="rk">tags:</span> database, architecture</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════ Curation ═══════ -->
+<div class="group">
+  <div class="group-head">
+    <div class="group-dot curation"></div>
+    <span class="group-name">Curation — Organize &amp; Control</span>
+  </div>
+  <div class="tools">
+
+    <!-- memory_forget -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_forget</span>
+        <span class="tool-desc">Permanently delete memories by id — no undo, only when you ask</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>ids <span class="ptyp">string[]</span> <span class="preq">required</span></td><td>Memory ids to delete (full or short form).</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"forget what you know about the old auth flow"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_get first, shows you what matched</em></span></div>
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"yes, delete it"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_forget({ ids: ["mem_e7b21f"] })</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rs">✓ Deleted 1 memory.</span>
+<span class="rk">removed:</span> <span class="rv">mem_e7b21f — "The old SAML flow was removed in v2.4"</span></div>
+      </div>
+    </div>
+
+    <!-- memory_list_tags -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_list_tags</span>
+        <span class="tool-desc">List every tag in the store and how many memories carry it</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td colspan="2" style="color: var(--text-3); font-style: italic;">None — returns all tags and their counts.</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"what topics do you have memories about?"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_list_tags()</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rk">8 tags:</span>
+
+<span class="rv">auth</span> <span class="rk">(5)</span>  ·  <span class="rv">deploy</span> <span class="rk">(3)</span>  ·  <span class="rv">architecture</span> <span class="rk">(8)</span>  ·  <span class="rv">database</span> <span class="rk">(4)</span>
+<span class="rv">frontend</span> <span class="rk">(2)</span>  ·  <span class="rv">testing</span> <span class="rk">(3)</span>  ·  <span class="rv">ci</span> <span class="rk">(1)</span>  ·  <span class="rv">preferences</span> <span class="rk">(6)</span></div>
+      </div>
+    </div>
+
+    <!-- memory_set_visibility -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_set_visibility</span>
+        <span class="tool-desc">Mark memories as shareable (eligible for export) or private</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>visibility <span class="ptyp">"private" | "shareable"</span> <span class="preq">required</span></td><td>The new visibility.</td></tr>
+          <tr><td>ids <span class="ptyp">string[]</span></td><td>Specific memory ids to change.</td></tr>
+          <tr><td>query <span class="ptyp">string</span></td><td>Match memories by text content.</td></tr>
+          <tr><td>tags <span class="ptyp">string[]</span></td><td>Match memories by tag.</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"make the project-x notes shareable"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_set_visibility({ visibility: "shareable", tags: ["project-x"] })</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rs">✓ Updated 4 memories to shareable.</span>
+<span class="rk">These items are now eligible for export. Nothing is shared
+until you run an export and approve the preview.</span></div>
+      </div>
+    </div>
+
+    <!-- memory_suggest -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_suggest</span>
+        <span class="tool-desc">Propose memories without saving — you review and approve each one</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>suggestions <span class="ptyp">object[]</span> <span class="preq">required</span></td><td>Each: <code>{ content: string, tags?: string[] }</code></td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>in suggest mode, proposes what it learned from the session</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rs">✓ 3 suggestions queued for review.</span>
+
+<span class="rn">1.</span> <span class="rv">The deploy pipeline requires manual approval for production.</span>  <span class="rk">tags: deploy</span>
+<span class="rn">2.</span> <span class="rv">Error boundaries wrap each route, not the whole app.</span>  <span class="rk">tags: frontend</span>
+<span class="rn">3.</span> <span class="rv">Prefers tabs over spaces, 2-width.</span>  <span class="rk">tags: preferences</span>
+
+<span class="rk">Run</span> <span class="rv">memshare review</span> <span class="rk">to approve or reject each one.</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════ Sharing ═══════ -->
+<div class="group">
+  <div class="group-head">
+    <div class="group-dot sharing"></div>
+    <span class="group-name">Sharing — Send &amp; Receive</span>
+  </div>
+  <div class="tools">
+
+    <!-- memory_export -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_export</span>
+        <span class="tool-desc">Write a bundle file to send to someone <span class="b2p">⟳ two-phase</span></span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>for <span class="ptyp">string</span></td><td>Who the bundle is for. Recorded in it.</td></tr>
+          <tr><td>query <span class="ptyp">string</span></td><td>Limit to memories matching this text.</td></tr>
+          <tr><td>tags <span class="ptyp">string[]</span></td><td>Limit by tag.</td></tr>
+          <tr><td>expires <span class="ptyp">string</span></td><td>Refuse import after this, e.g. <code>"30d"</code>.</td></tr>
+          <tr><td>note <span class="ptyp">string</span></td><td>A note to the recipient.</td></tr>
+          <tr><td>confirmed <span class="ptyp">boolean</span></td><td>Omit to preview. <code>true</code> to write the file.</td></tr>
+        </table>
+        <div class="sec-label">Conversation (two-phase)</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"send Dana the architecture notes"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>1st call (preview) — shows exactly what would go in</em></span></div>
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"looks good"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>2nd call with confirmed: true — writes the bundle</em></span></div>
+        </div>
+        <div class="sec-label">Response (preview)</div>
+        <div class="resp"><span class="rk">Would export 5 memories for</span> <span class="rv">Dana</span><span class="rk">, expiring in 7 days:</span>
+
+<span class="rs">✓</span> <span class="rv">API uses cursor-based pagination, not offset.</span>
+<span class="rs">✓</span> <span class="rv">The team chose Postgres for JSONB support.</span>
+<span class="rs">✓</span> <span class="rv">Deploy requires manual prod approval.</span>
+<span class="rs">✓</span> <span class="rv">Error boundaries wrap each route.</span>
+<span class="rs">✓</span> <span class="rv">Rate limiter is 100 req/min per API key.</span>
+
+<span class="rk">⚠ Held back (private):</span> <span class="rv">Prefers dark mode in all editors.</span>
+
+<span class="rk">Say "go ahead" to write the bundle, or adjust.</span></div>
+        <div class="sec-label">Response (confirmed)</div>
+        <div class="resp"><span class="rs">✓ Bundle written.</span>
+<span class="rk">path:</span> <span class="rv">~/.memshare/bundles/bundle-a3f8c2d1.memshare.json</span>
+<span class="rk">for:</span> Dana  <span class="rk">·</span>  <span class="rk">items:</span> 5  <span class="rk">·</span>  <span class="rk">expires:</span> 2026-09-28
+
+<span class="rk">Send the file however you like — email, Slack, AirDrop.</span></div>
+      </div>
+    </div>
+
+    <!-- memory_import -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_import</span>
+        <span class="tool-desc">Accept memories from a bundle someone sent you <span class="b2p">⟳ two-phase</span></span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>file <span class="ptyp">string</span> <span class="preq">required</span></td><td>Path to the <code>.memshare.json</code> bundle.</td></tr>
+          <tr><td>accept <span class="ptyp">string[]</span></td><td>Specific ids from the preview to accept. Omit for all.</td></tr>
+          <tr><td>confirmed <span class="ptyp">boolean</span></td><td>Omit to preview. <code>true</code> to import.</td></tr>
+        </table>
+        <div class="sec-label">Conversation (two-phase)</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"take in that bundle from Alice"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>1st call — shows every item, flags duplicates and sensitive data</em></span></div>
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"take all except the last one"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>2nd call with confirmed: true and accept list</em></span></div>
+        </div>
+        <div class="sec-label">Response (preview)</div>
+        <div class="resp"><span class="rk">Bundle from</span> <span class="rv">Alice</span> <span class="rk">— 4 items, expires 2026-10-01:</span>
+<span class="rk">Note: "Here's the backend context you'll need."</span>
+
+<span class="rn">1.</span> <span class="rv">Auth service uses JWT with 15-min refresh.</span>  <span class="rk">← you already have this</span>
+<span class="rn">2.</span> <span class="rs">API uses cursor-based pagination, not offset.</span>  <span class="rk">new</span>
+<span class="rn">3.</span> <span class="rs">Webhook retries use exponential backoff, max 5.</span>  <span class="rk">new</span>
+<span class="rn">4.</span> <span class="rs">Staging env resets nightly at 3am UTC.</span>  <span class="rk">new</span>
+
+<span class="rk">1 duplicate skipped, 3 new. Say which to take.</span></div>
+        <div class="sec-label">Response (confirmed)</div>
+        <div class="resp"><span class="rs">✓ Imported 3 memories.</span>
+<span class="rk">All stored as</span> <span class="rv">private</span><span class="rk"> — receiving is not consent to share.</span></div>
+      </div>
+    </div>
+
+    <!-- memory_preview -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_preview</span>
+        <span class="tool-desc">Read a bundle without storing anything — look before you decide</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>file <span class="ptyp">string</span> <span class="preq">required</span></td><td>Path to the <code>.memshare.json</code> bundle.</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"what did Dana send me?"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_preview — nothing stored, just shows the contents</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rk">Bundle from</span> <span class="rv">Dana</span> <span class="rk">— 5 items, expires in 6 days.</span>
+<span class="rk">Note: "Architecture context for the new API."</span>
+<span class="rk">Hash: ✓ verified (unmodified since export).</span>
+
+<span class="rn">1.</span> <span class="rv">API uses cursor-based pagination, not offset.</span>
+<span class="rn">2.</span> <span class="rv">The team chose Postgres for JSONB support.</span>
+<span class="rn">3.</span> <span class="rv">Deploy requires manual prod approval.</span>
+<span class="rn">4.</span> <span class="rv">Error boundaries wrap each route.</span>
+<span class="rn">5.</span> <span class="rv">Rate limiter is 100 req/min per API key.</span>
+
+<span class="rk">Nothing stored. Say "import" if you want any of it.</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════ Monitoring ═══════ -->
+<div class="group">
+  <div class="group-head">
+    <div class="group-dot monitor"></div>
+    <span class="group-name">Monitoring</span>
+  </div>
+  <div class="tools">
+
+    <!-- memory_stats -->
+    <div class="tool">
+      <div class="tool-head" onclick="toggle(this)">
+        <span class="tool-fn">memory_stats</span>
+        <span class="tool-desc">How much is stored, how recently, and where it came from</span>
+        <span class="tool-arrow">▾</span>
+      </div>
+      <div class="tool-body">
+        <div class="sec-label">Parameters</div>
+        <table class="params">
+          <tr><td>days <span class="ptyp">number</span></td><td>Lookback window for recent/perDay (default 14, max 365).</td></tr>
+        </table>
+        <div class="sec-label">Conversation</div>
+        <div class="convo">
+          <div class="cx"><span class="cx-who u">You</span><span class="cx-t">"is memshare actually saving things?"</span></div>
+          <div class="cx"><span class="cx-who a">AI</span><span class="cx-t"><em>calls memory_stats()</em></span></div>
+        </div>
+        <div class="sec-label">Response</div>
+        <div class="resp"><span class="rv">12 memories</span><span class="rk">, 5 in the last 14 days.</span>
+
+  <span class="rk">▂▁▄█▂ ▁▃    14d ago → today</span>
+
+<span class="rk">·</span> <span class="rv">9</span> <span class="rk">captured by an assistant,</span> <span class="rv">3</span> <span class="rk">added by hand</span>
+<span class="rk">·</span> <span class="rv">5</span> <span class="rk">shareable,</span> <span class="rv">7</span> <span class="rk">private</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div><!-- /.wrap -->
+
+<footer>
+  <div class="wrap">
+    <span>MIT licensed · your memory belongs to you</span>
+    <div class="footer-links">
+      <a href="https://github.com/kampana/memshare" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.npmjs.com/package/memshare-mcp" target="_blank" rel="noopener">npm</a>
+      <a href="index.html">Home</a>
+      <a href="pitch.html">Deck</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggle(head) { head.parentElement.classList.toggle('open'); }
+</script>
+</body>
+</html>
