@@ -196,8 +196,10 @@ export class MemoryStore {
     const queryWords = (filter.query?.trim().toLowerCase() ?? "").split(/\s+/).filter(Boolean);
     const tool = filter.tool?.trim().toLowerCase();
 
-    let items = await this.all();
-    items = items.filter((item) => {
+    const allItems = await this.all();
+    const scores = new Map<string, number>();
+
+    let items = allItems.filter((item) => {
       if (!filter.includeExpired && isExpired(item, now)) return false;
       if (filter.visibility && item.visibility !== filter.visibility) return false;
       if (filter.confidence && item.confidence !== filter.confidence) return false;
@@ -207,12 +209,16 @@ export class MemoryStore {
       }
       if (queryWords.length > 0) {
         const haystack = `${item.content} ${item.tags.join(" ")}`.toLowerCase();
-        // Any word, not all of them: callers search by topic ("mf-toolbar i18n
-        // translation") and one absent word should not empty the result set.
-        if (!queryWords.some((w) => haystack.includes(w))) return false;
+        const matchCount = queryWords.filter((w) => haystack.includes(w)).length;
+        if (matchCount === 0) return false;
+        scores.set(item.id, matchCount);
       }
       return true;
     });
+
+    if (queryWords.length > 0) {
+      items.sort((a, b) => (scores.get(b.id) ?? 0) - (scores.get(a.id) ?? 0));
+    }
 
     if (filter.limit !== undefined && filter.limit >= 0) {
       items = items.slice(0, filter.limit);
