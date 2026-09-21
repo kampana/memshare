@@ -124,6 +124,23 @@ describe("list", () => {
     expect(await store.list({ query: "postgres financial" })).toHaveLength(2);
   });
 
+  it("ranks results by number of matching query words", async () => {
+    await store.add({ content: "PR 3613 changed the input bar files chip layout" });
+    await store.add({ content: "the input bar uses flexbox" });
+    await store.add({ content: "chip component has input validation" });
+    const items = await store.list({ query: "PR 3613 input bar files chip" });
+    expect(items.length).toBeGreaterThanOrEqual(3);
+    expect(items[0]!.content).toContain("PR 3613");
+  });
+
+  it("ranking decides what survives the limit", async () => {
+    await store.add({ content: "PR 3613 changed the input bar files chip layout" });
+    await store.add({ content: "the input bar uses flexbox" });
+    const items = await store.list({ query: "PR 3613 input bar files chip", limit: 1 });
+    expect(items).toHaveLength(1);
+    expect(items[0]!.content).toContain("PR 3613");
+  });
+
   it("still returns nothing when no word matches", async () => {
     expect(await store.list({ query: "redis cassandra" })).toHaveLength(0);
   });
