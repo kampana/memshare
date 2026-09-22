@@ -233,6 +233,7 @@
     <a href="/memshare/" class="logo">mem<span>share</span></a>
     <div class="nav-links">
       <a href="index.html" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'});return false">How it works</a>
+      <a href="index.html" onclick="document.getElementById('use-cases').scrollIntoView({behavior:'smooth'});return false">Use cases</a>
       <a href="index.html" onclick="document.getElementById('compare').scrollIntoView({behavior:'smooth'});return false">Compare</a>
       <a href="pitch.html">Deck</a>
       <a href="tools.html">Tools</a>
@@ -344,6 +345,54 @@
 <span class="c">→ the whole list. nothing imported, nothing changed.</span>
 <span class="s">"import what Dana sent me"</span>
 <span class="c">→ he sees each item and picks what he wants</span></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="use-cases">
+  <div class="wrap">
+    <p class="eyebrow">Use cases</p>
+    <h2>What people actually do with it.</h2>
+    <p class="section-lede">
+      Between people, between tools, between sessions — the same local store serves all of them.
+    </p>
+
+    <h3 class="sub">Between people</h3>
+    <div class="grid grid-3" style="margin-bottom: 36px;">
+      <div class="card">
+        <span class="icon">🆕</span>
+        <h3>Onboarding a new teammate</h3>
+        <p>Instead of spending a week "teaching" their AI about the project, the tech lead shares a bundle — internal terms, architecture decisions, code conventions. Day one, the new hire's AI already knows.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🎨</span>
+        <h3>Designer on Cursor, devs on Claude</h3>
+        <p>The designer's AI knows the component conventions. The backend devs' AI knows the API contract. One bundle each way and neither side re-explains — across people <em>and</em> across vendors.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🔄</span>
+        <h3>Project handoff</h3>
+        <p>A freelancer finished their part. Instead of the next person starting from zero, they share a bundle — client preferences, decision history, technical gotchas.</p>
+      </div>
+    </div>
+
+    <h3 class="sub">Between tools and sessions</h3>
+    <div class="grid grid-3">
+      <div class="card">
+        <span class="icon">🔀</span>
+        <h3>Switching tools mid-project</h3>
+        <p>Claude Code today, Cursor tomorrow, Windsurf next month. Every MCP client reads the same local store — there is nothing to migrate.</p>
+      </div>
+      <div class="card">
+        <span class="icon">⚡</span>
+        <h3>Multiple models in parallel</h3>
+        <p>Claude for code, ChatGPT for research, Gemini for document analysis. All read from the same memory store — no duplicating context three times.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🪟</span>
+        <h3>Between distant sessions</h3>
+        <p>Long conversation with rich context. Open a new chat and it's all there — the MCP server carries your memory across sessions automatically.</p>
       </div>
     </div>
   </div>
